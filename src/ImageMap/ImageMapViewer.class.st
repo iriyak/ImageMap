@@ -2,6 +2,8 @@
 I am the interactive window shown in the Map tab of an ImageMapSnapshot. I have a toolbar (Prev, Next, a start-index field with Go, and a position bar that moves the window over the whole heap), a legend, the block map, and a side panel. The side panel shows the bytes per kind in the window (with the share and the number of objects), as ImageMapOverview does for the whole heap, a Classes button that opens the Classes view of the snapshot (bytes by kind and class as a diagram; I also have the same Classes and Classes (Mermaid) views myself, and they follow the window when it moves), and the details of the selected block (class, kind, index, offset, size) with Inspect and References buttons. Inspect opens the object in an inspector, and References opens an ImageMapReferences: the class chain and the slots of the object as a diagram.
 
 Open me with `ImageMapViewer openAt: 5000000`. The window is opened in the UI process, so this can be called from any process. `ImageMapViewer on: aSnapshot` builds me for a snapshot you already have. `goto:` moves the window: it keeps the start inside the heap and counts the objects again if the heap has shrunk.
+
+I keep only where the window is (the snapshot, and how many objects it has). What is on the screen, the toolbar, the block map, the side panel and what has been clicked, belongs to an ImageMapViewerPane, one for each picture I am shown in, so I can be open more than once at the same time (ImageMapViewer openAt: opens me, and inspecting its answer opens me a second time). `goto:` moves the window and redraws every picture that is still alive, and the Classes and Classes (Mermaid) tabs.
 "
 Class {
 	#name : 'ImageMapViewer',
@@ -10,17 +12,8 @@ Class {
 		'snapshot',
 		'count',
 		'total',
-		'root',
-		'mapHolder',
-		'sidePanel',
-		'detailBox',
-		'editor',
-		'track',
-		'thumb',
-		'infoLabel',
-		'selectedElement',
-		'selectedCell',
-		'followers'
+		'followers',
+		'panes'
 	],
 	#category : 'ImageMap-Window',
 	#package : 'ImageMap',
@@ -49,34 +42,19 @@ ImageMapViewer class >> totalObjects [
 	^ n
 ]
 
-{ #category : 'ui' }
-ImageMapViewer >> buildRoot [
-	| body |
-	root := BlElement new
-		layout: BlLinearLayout vertical;
-		constraintsDo: [:c | c horizontal matchParent. c vertical matchParent].
-	root addChild: self toolbar.
-	root addChild: snapshot legendElement.
-	body := BlElement new
-		layout: BlLinearLayout horizontal;
-		constraintsDo: [:c | c horizontal matchParent. c vertical matchParent].
-	mapHolder := BlElement new
-		constraintsDo: [:c | c horizontal exact: 332. c vertical matchParent].
-	sidePanel := BlElement new
-		layout: BlLinearLayout vertical;
-		padding: (BlInsets all: 8);
-		constraintsDo: [:c | c horizontal exact: 280. c vertical fitContent].
-	body addChild: mapHolder; addChild: (sidePanel asScrollableElement
-		constraintsDo: [:c | c horizontal exact: 280. c vertical matchParent];
-		yourself).
-	root addChild: body.
-	self refresh.
-	^ root
+{ #category : 'accessing' }
+ImageMapViewer >> count [
+	^ count
 ]
 
 { #category : 'ui' }
 ImageMapViewer >> element [
-	^ self buildRoot
+	"A new picture of this viewer: its own toolbar, map, side panel and selection. The viewer keeps the pictures (weakly), and moves them all when the window moves."
+	| pane |
+	pane := ImageMapViewerPane on: self.
+	panes ifNil: [panes := WeakSet new].
+	panes add: pane.
+	^ pane build
 ]
 
 { #category : 'private' }
@@ -115,15 +93,8 @@ ImageMapViewer >> goto: aStart [
 		total := self class totalObjects.
 		s := (aStart max: 0) min: (total - count max: 0).
 		snapshot := ImageMapSnapshot start: s count: count].
-	self refresh
-]
-
-{ #category : 'navigation' }
-ImageMapViewer >> gotoFromEditor [
-	| n |
-	n := (editor text asString reject: [:ch | ch = $, or: [ch isSeparator]]) asInteger.
-	n ifNil: [^ self refreshControls].
-	self goto: n
+	self refreshPanes.
+	self refreshFollowers
 ]
 
 { #category : 'views' }
@@ -168,28 +139,6 @@ ImageMapViewer >> heading: aString [
 ]
 
 { #category : 'ui' }
-ImageMapViewer >> kibibytes: bytes [
-	^ (ImageMapCell roundedText: bytes / 1024.0), ' KiB'
-]
-
-{ #category : 'ui' }
-ImageMapViewer >> kindRow: aKind stat: aPair [
-	"aPair is (Array bytes objects), as ImageMapSnapshot>>kindStats answers."
-	| row sq |
-	row := BlElement new
-		layout: BlLinearLayout horizontal;
-		constraintsDo: [:c | c horizontal matchParent. c vertical fitContent].
-	sq := BlElement new
-		size: 12 @ 12;
-		background: (ImageMapCell colorFor: aKind);
-		geometry: (BlRoundedRectangleGeometry cornerRadius: 2);
-		margin: (BlInsets top: 4 left: 0 bottom: 0 right: 6).
-	row addChild: sq.
-	row addChild: (self line: aKind asString, '  ', (self kibibytes: aPair first), '  (', (aPair first * 100 / (snapshot totalBytes max: 1)) rounded printString, '%)  ', aPair last asStringWithCommas, (aPair last = 1 ifTrue: [' object'] ifFalse: [' objects'])).
-	^ row
-]
-
-{ #category : 'ui' }
 ImageMapViewer >> line: aString [
 	^ BrLabel new aptitude: BrGlamorousLabelAptitude new; text: aString; yourself
 ]
@@ -197,57 +146,6 @@ ImageMapViewer >> line: aString [
 { #category : 'printing' }
 ImageMapViewer >> printOn: aStream [
 	aStream nextPutAll: 'ImageMapViewer on '; print: snapshot
-]
-
-{ #category : 'ui' }
-ImageMapViewer >> refresh [
-	| scroll |
-	mapHolder removeChildren.
-	selectedElement := nil.
-	selectedCell := nil.
-	scroll := (snapshot mapElementOnSelect: [:cell :el | self select: cell element: el]) asScrollableElement.
-	scroll constraintsDo: [:c | c horizontal matchParent. c vertical matchParent].
-	mapHolder addChild: scroll.
-	self refreshSide.
-	self refreshControls.
-	self refreshFollowers
-]
-
-{ #category : 'ui' }
-ImageMapViewer >> refreshControls [
-	editor text: snapshot start printString.
-	infoLabel text: snapshot printString.
-	thumb relocate: ((snapshot start / total * 360) rounded min: 356) @ 0.
-	thumb size: ((count / total * 360) rounded max: 4) @ 16
-]
-
-{ #category : 'ui' }
-ImageMapViewer >> refreshDetail [
-	| btn refs row obj |
-	detailBox removeChildren.
-	selectedCell ifNil: [detailBox addChild: (self line: 'Click a block.'). ^ self].
-	obj := selectedCell object.
-	{ 'class: ', selectedCell className.
-	  'kind: ', selectedCell kind asString.
-	  'index: #', selectedCell index printString.
-	  'offset: +', (selectedCell offset printStringBase: 16).
-	  'size: ', selectedCell bytes printString, ' B' }
-		do: [:s | detailBox addChild: (self line: s)].
-	row := BlElement new
-		layout: BlLinearLayout horizontal;
-		constraintsDo: [:c | c horizontal matchParent. c vertical fitContent];
-		margin: (BlInsets top: 8 left: 0 bottom: 0 right: 0).
-	btn := BrButton new
-		aptitude: BrGlamorousButtonWithLabelAptitude new;
-		label: 'Inspect';
-		margin: (BlInsets right: 8).
-	btn action: [btn phlow spawnObject: obj].
-	refs := BrButton new
-		aptitude: BrGlamorousButtonWithLabelAptitude new;
-		label: 'References'.
-	refs action: [refs phlow spawnObject: (ImageMapReferences on: obj) viewName: 'Diagram'].
-	row addChild: btn; addChild: refs.
-	detailBox addChild: row
 ]
 
 { #category : 'private' }
@@ -260,33 +158,11 @@ ImageMapViewer >> refreshFollowers [
 			ifFalse: [h userData at: #stale put: true]]
 ]
 
-{ #category : 'ui' }
-ImageMapViewer >> refreshSide [
-	| classesBtn |
-	sidePanel removeChildren.
-	sidePanel addChild: (self heading: 'Bytes by kind').
-	snapshot kindStats do: [:a | sidePanel addChild: (self kindRow: a key stat: a value)].
-	classesBtn := BrButton new
-		aptitude: BrGlamorousButtonWithLabelAptitude new;
-		label: 'Classes';
-		margin: (BlInsets top: 8 left: 0 bottom: 0 right: 0).
-	classesBtn action: [classesBtn phlow spawnObject: snapshot viewName: 'Classes'].
-	sidePanel addChild: classesBtn.
-	sidePanel addChild: (self heading: 'Selected').
-	detailBox := BlElement new
-		layout: BlLinearLayout vertical;
-		constraintsDo: [:c | c horizontal matchParent. c vertical fitContent].
-	sidePanel addChild: detailBox.
-	self refreshDetail
-]
-
-{ #category : 'ui' }
-ImageMapViewer >> select: aCell element: anElement [
-	selectedElement ifNotNil: [:prev | prev border: BlBorder empty].
-	selectedElement := anElement.
-	selectedCell := aCell.
-	anElement border: (BlBorder paint: Color white width: 2).
-	self refreshDetail
+{ #category : 'private' }
+ImageMapViewer >> refreshPanes [
+	"The window has moved: draw again every picture of this viewer that is still alive."
+	panes ifNil: [^ self].
+	panes copy do: [:p | p refresh]
 ]
 
 { #category : 'initialization' }
@@ -301,51 +177,7 @@ ImageMapViewer >> snapshot [
 	^ snapshot
 ]
 
-{ #category : 'ui' }
-ImageMapViewer >> toolbar [
-	| bar prev next go |
-	bar := BlElement new
-		layout: BlLinearLayout horizontal;
-		constraintsDo: [:c | c horizontal matchParent. c vertical fitContent];
-		padding: (BlInsets all: 6).
-	prev := BrButton new
-		aptitude: BrGlamorousButtonWithLabelAptitude new;
-		label: 'Prev';
-		margin: (BlInsets right: 6).
-	prev action: [self goto: snapshot start - count].
-	next := BrButton new
-		aptitude: BrGlamorousButtonWithLabelAptitude new;
-		label: 'Next';
-		margin: (BlInsets right: 12).
-	next action: [self goto: snapshot start + count].
-	editor := BrEditor new
-		aptitude: BrGlamorousEditorAptitude new;
-		beMode: BrTextEditorEditableSingleLineMode new;
-		text: snapshot start printString;
-		constraintsDo: [:c | c horizontal exact: 110. c vertical fitContent];
-		margin: (BlInsets right: 6);
-		yourself.
-	editor when: BlKeyDownEvent do: [:e | e key = BlKeyboardKey return ifTrue: [self gotoFromEditor. e consumed: true]].
-	go := BrButton new
-		aptitude: BrGlamorousButtonWithLabelAptitude new;
-		label: 'Go';
-		margin: (BlInsets right: 12).
-	go action: [self gotoFromEditor].
-	infoLabel := (self line: '') margin: (BlInsets left: 12); yourself.
-	bar addChild: prev; addChild: next; addChild: editor; addChild: go; addChild: self trackElement; addChild: infoLabel.
-	^ bar
-]
-
-{ #category : 'ui' }
-ImageMapViewer >> trackElement [
-	thumb := BlElement new size: 4 @ 16; background: (Color fromHexString: 'FFB52E').
-	track := BlElement new
-		size: 360 @ 16;
-		background: (Color fromHexString: '3A4458');
-		geometry: (BlRoundedRectangleGeometry cornerRadius: 3);
-		margin: (BlInsets top: 4 left: 0 bottom: 0 right: 0);
-		yourself.
-	track addChild: thumb.
-	track when: BlClickEvent do: [:evt | self goto: (evt localPosition x / 360 * total) rounded].
-	^ track
+{ #category : 'accessing' }
+ImageMapViewer >> total [
+	^ total
 ]
