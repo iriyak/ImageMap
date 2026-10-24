@@ -1,5 +1,7 @@
 # Implementation notes
 
+> **About this note.** This note was written by Claude (Anthropic's AI assistant) at the request of the author of ImageMap, who wants to read it slowly and learn from it: how the object memory of a Pharo image is organised, and how ImageMap looks at it. The author is still studying the subject and has not yet checked all of it, so please read it as study material and not as an authoritative description of the Spur memory manager. Parts may be wrong or out of date; the VM documentation in [Further reading](#further-reading) is the reference. In the text below, "I" is Claude. Like the code, the note is experimental: see the status note in the [README](../README.md).
+
 How ImageMap looks at the object memory of a running Pharo image, and the logic behind the three views. This is a short orientation, not a description of the VM. For the VM itself, follow the links in [Further reading](#further-reading).
 
 Everything below was checked against GT v1.1.624 (Pharo 13.1, 64-bit Spur, Windows). Statements about the VM that I took from the literature and did not check in the image are marked *(literature)*.
