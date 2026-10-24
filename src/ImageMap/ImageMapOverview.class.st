@@ -197,7 +197,7 @@ ImageMapOverview >> gtNeighboursTableFor: aView [
 	^ aView columnedList
 		title: 'Neighbours (table)';
 		priority: 5;
-		items: [self kindTransitionRows];
+		items: [self kindTransitionRows sorted: [:a :b | a objects >= b objects]];
 		column: 'Kind' text: [:r | r kind];
 		column: 'Objects' text: [:r | r objects asStringWithCommas] width: 110;
 		column: 'Same kind next' text: [:r | (r sameShare * 100) rounded printString, '%'] width: 120;
