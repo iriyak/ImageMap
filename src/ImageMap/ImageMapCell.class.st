@@ -1,5 +1,7 @@
 "
-One heap object seen by the image map: a reference to the object, its index in heap order (allObjectsDo: order), its cumulative byte offset (live objects only, free chunks not counted), its size in bytes and a coarse kind.
+I am one object as seen by ImageMapSnapshot: a reference to the object, its index in heap order (the order of SystemNavigation>>allObjectsDo:), its byte offset (the running total of the sizes of the live objects before it; free chunks are not counted), its size in bytes, and its kind.
+
+The kind is a coarse classification of the object's class: class, method, symbol, string, array, methoddict, dictionary, association, ordered, object, bytes, words, weak, context, block, or other. `ImageMapCell kindOfClass:` computes it, and `ImageMapCell colorFor:` gives the colour that every view uses for it. The colours are kept in a class variable; `ImageMapCell resetColors` rebuilds them.
 "
 Class {
 	#name : 'ImageMapCell',

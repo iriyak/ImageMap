@@ -1,5 +1,7 @@
 "
-Interactive view over ImageMapSnapshot windows: toolbar (prev/next, start index, position bar), the block map, and a side panel with per-kind counts and details of the selected block.
+I am the interactive window shown in the Map tab of an ImageMapSnapshot. I have a toolbar (Prev, Next, a start-index field with Go, and a position bar that moves the window over the whole heap), a legend, the block map, and a side panel. The side panel shows the number of objects per kind in the window and the details of the selected block (class, kind, index, offset, size) with an Inspect button.
+
+Open me with `ImageMapViewer openAt: 5000000`. The window is opened in the UI process, so this can be called from any process. `ImageMapViewer on: aSnapshot` builds me for a snapshot you already have. `goto:` moves the window: it keeps the start inside the heap and counts the objects again if the heap has shrunk.
 "
 Class {
 	#name : 'ImageMapViewer',

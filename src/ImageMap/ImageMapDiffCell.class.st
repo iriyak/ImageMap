@@ -1,5 +1,9 @@
 "
-One block of the diff map: either a baseline page (pageNumber) with its per-kind byte change, or a tail block (isTail) for bytes added after the last baseline page.
+I am one block of the diff map. Normally I stand for one baseline page (`pageNumber`). I hold `deltas`, the change in bytes for each kind (in the order of `ImageMapCell kinds`), and `afterObjects`, the number of objects now in the range of the page.
+
+If the anchor of my page is gone, I am merged into an earlier page (`mergedInto`, `isMerged`) and my change is counted there; `groupSize` is how many baseline pages a block stands for, itself included. A tail block (`isTail`) stands for bytes that were added after the last baseline page.
+
+`dominantKind` and `dominantDelta` give the kind with the biggest change, which decides my colour. `topChanges:` lists the biggest changes.
 "
 Class {
 	#name : 'ImageMapDiffCell',

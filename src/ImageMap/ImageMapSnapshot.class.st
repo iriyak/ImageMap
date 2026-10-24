@@ -1,5 +1,9 @@
 "
-A window of consecutive objects in heap order (SystemNavigation>>allObjectsDo: walks memory in address order). Shown as a 16-column block map; click a block to inspect the object.
+I am a window of consecutive objects, in the order SystemNavigation>>allObjectsDo: visits them: `count` objects from index `start`, each one an ImageMapCell. Create me with `ImageMapSnapshot start: 5000000 count: 1024`, or with `ImageMapSnapshot startingAt: anObject count: 1024` to start at the current index of an object (nil if the object is gone).
+
+`mapElement` draws me as a 16-column block map; click a block to inspect its object. My Map view in the inspector is an ImageMapViewer. Building me walks the heap from the beginning, so it takes about a second when start is around 5,000,000.
+
+Indexes and offsets change when the garbage collector runs, so I am a picture of one moment.
 "
 Class {
 	#name : 'ImageMapSnapshot',

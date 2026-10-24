@@ -1,3 +1,8 @@
+"
+I am the Metacello baseline of ImageMap. Load ImageMap with `Metacello new repository: 'github://iriyak/ImageMap:main/src'; baseline: 'ImageMap'; load`.
+
+ImageMap needs Glamorous Toolkit (Bloc, Brick and Phlow), which this baseline does not declare, so load it into a GT image. `BaselineOfImageMap loadLepiter` adds the lepiter directory of the cloned repository to the default Lepiter database.
+"
 Class {
 	#name : 'BaselineOfImageMap',
 	#superclass : 'BaselineOf',

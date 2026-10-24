@@ -1,5 +1,11 @@
 "
-Experimental diff between a baseline ImageMapOverview and the heap now. The first object of each baseline page is an anchor; walking the heap in order and recognising the anchors one after another gives, for every baseline page, how many bytes of each kind now sit in its range. Needs the heap order of the surviving anchors to be unchanged (checked: aligned).
+I compare the heap now with a baseline, an ImageMapOverview taken earlier, page by page. Create me with `ImageMapDiff against: anOverview`, or use the baseline kept on the class side: `ImageMapDiff takeBaseline`, do something to the image, then `ImageMapDiff open`. `ImageMapDiff clearBaseline` drops the baseline.
+
+The first object of each baseline page is an anchor. I collect garbage, walk the heap in order and recognise the anchors one after another. The bytes of each kind between two anchors are compared with what the page held in the baseline. A page whose anchor has been collected is merged into the page before it, and bytes added after the last page show up as tail blocks (see ImageMapDiffCell). If the surviving anchors no longer appear in their old order, `isFullyAligned` is false and the views say so.
+
+I draw the pages as blocks: filled for growth, outlined for shrinkage, coloured by the kind that changed most. My side panel lists the change by kind and the biggest class changes (`classChanges` has the change in bytes and objects for every class).
+
+I am experimental.
 "
 Class {
 	#name : 'ImageMapDiff',

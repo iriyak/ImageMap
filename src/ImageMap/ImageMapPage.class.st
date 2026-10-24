@@ -1,5 +1,7 @@
 "
-One page (a fixed number of bytes of live objects, in heap order) of the overview: a reference to its first object, that object's index and byte offset at scan time, and the bytes per kind.
+I am one page of the overview: a run of live objects, in heap order, that together take about `pageBytes` bytes (1 MiB by default). I know how many objects and bytes I hold, the bytes per kind, the index and offset of my first object at scan time, and my first object itself.
+
+I hold my first object only weakly, so that taking a baseline does not keep it alive. `firstObject` answers nil once it has been collected, and `isAnchorAlive` tells whether it is still there. ImageMapOverview uses it to open a window at the start of the page, and ImageMapDiff uses it as the anchor of the page.
 "
 Class {
 	#name : 'ImageMapPage',
