@@ -204,7 +204,7 @@ ImageMapViewer >> refreshDetail [
 	refs := BrButton new
 		aptitude: BrGlamorousButtonWithLabelAptitude new;
 		label: 'References'.
-	refs action: [refs phlow spawnObject: (ImageMapReferences on: obj)].
+	refs action: [refs phlow spawnObject: (ImageMapReferences on: obj) viewName: 'Diagram'].
 	row addChild: btn; addChild: refs.
 	detailBox addChild: row
 ]

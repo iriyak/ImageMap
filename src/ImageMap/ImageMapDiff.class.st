@@ -393,7 +393,7 @@ ImageMapDiff >> refreshDetail [
 		btn action: [ | w |
 			w := ImageMapSnapshot startingAt: pg firstObject count: 1024.
 			w ifNil: [detailBox addChild: (self line: 'That object no longer exists (GC).')]
-				ifNotNil: [btn phlow spawnObject: (ImageMapViewer on: w)]].
+				ifNotNil: [btn phlow spawnObject: (ImageMapViewer on: w) viewName: 'Map']].
 		detailBox addChild: btn]
 ]
 

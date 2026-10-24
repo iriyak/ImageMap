@@ -113,7 +113,7 @@ ImageMapOverview >> baselineSection [
 	cmpBtn action: [
 		ImageMapDiff baseline
 			ifNil: [status text: 'no baseline yet: press Set as baseline first']
-			ifNotNil: [cmpBtn phlow spawnObject: ImageMapDiff compareToBaseline]].
+			ifNotNil: [cmpBtn phlow spawnObject: ImageMapDiff compareToBaseline viewName: 'Map']].
 	row addChild: setBtn; addChild: cmpBtn.
 	box addChild: row.
 	^ box
@@ -348,7 +348,7 @@ ImageMapOverview >> refreshDetail [
 			ifTrue: [ImageMapSnapshot startingAt: pg firstObject count: 1024]
 			ifFalse: [nil].
 		w ifNil: [detailBox addChild: (self line: 'That object no longer exists (GC). Rescan the overview.')]
-			ifNotNil: [btn phlow spawnObject: (ImageMapViewer on: w)]].
+			ifNotNil: [btn phlow spawnObject: (ImageMapViewer on: w) viewName: 'Map']].
 	detailBox addChild: btn
 ]
 
