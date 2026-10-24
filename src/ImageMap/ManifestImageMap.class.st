@@ -8,7 +8,7 @@ There are three views, each with a data class and a viewer:
 
 Entry points: `ImageMapViewer openAt: 5000000`, `ImageMapOverview open`, and `ImageMapDiff takeBaseline` followed by `ImageMapDiff open`.
 
-Some diagrams (the Classes view of the overview and the References of an object) are drawn from Mermaid with Pele2svg (https://github.com/iriyak/pele2svg). Pele2svg is optional: without it the views say so and everything else works. ImageMapMermaid and ImageMapReferences hold this part.
+Some diagrams (the Classes, Neighbours and Sizes views of the overview, the Class changes view of the diff, and the References of an object) are drawn from Mermaid with Pele2svg (https://github.com/iriyak/pele2svg). Pele2svg is optional: without it the views say so and everything else works. ImageMapMermaid and ImageMapReferences hold this part.
 
 Object indexes and offsets follow the order in which SystemNavigation>>allObjectsDo: visits the objects. An offset is the running total of their sizes, not a memory address. Both move whenever the garbage collector runs. Scanning only reads the class and the size of each object.
 "

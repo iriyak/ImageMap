@@ -4,7 +4,7 @@ I am a picture of the whole heap. One pass over all objects, in the order System
 `ImageMapOverview scan` collects garbage and then scans (a few seconds for about 8 million objects). `ImageMapOverview open` does that and opens me in the UI process. `scanPageBytes:` uses another page size, but only 1 MiB has been tried in the views. I also keep the bytes and the object count per class (`classStats`), which ImageMapDiff needs.
 
 Set as baseline keeps me as the baseline for ImageMapDiff, and Compare with now opens the diff.
-My Classes view draws bytes per kind and per class as a sankey diagram, and Classes (Mermaid) shows its source. Both come from ImageMapMermaid and need Pele2svg for the drawing.
+The same pass counts which kind follows which in heap order (`transitions`) and how many objects and bytes each kind has in each size class (`sizeCounts`, `sizeBytes`). My diagram views are Classes (a sankey of bytes per kind and class), Neighbours and Sizes, each with a table or the Mermaid source next to it. They are built by ImageMapMermaid and need Pele2svg for the drawing; the numbers are in `kindTransitionRows` and `sizeClassRows`.
 "
 Class {
 	#name : 'ImageMapOverview',
@@ -18,7 +18,10 @@ Class {
 		'selectedElement',
 		'selectedPage',
 		'classStats',
-		'scannedAt'
+		'scannedAt',
+		'transitions',
+		'sizeCounts',
+		'sizeBytes'
 	],
 	#category : 'ImageMap-Overview',
 	#package : 'ImageMap',
@@ -45,6 +48,42 @@ ImageMapOverview class >> scanPageBytes: aSize [
 	Smalltalk garbageCollect.
 	^ [self new scanPageBytes: aSize slow: false]
 		on: Error do: [:e | self new scanPageBytes: aSize slow: true]
+]
+
+{ #category : 'analysis' }
+ImageMapOverview class >> sizeClassCount [
+	"Size classes are powers of two: class n holds the sizes above 2^(n-1) and up to 2^n bytes, counted from 1 (up to 1 B) to 40 (up to 512 GiB)."
+	^ 40
+]
+
+{ #category : 'analysis' }
+ImageMapOverview class >> sizeClassLabel: n [
+	"The upper bound of size class n, as text."
+	| bound |
+	bound := 1 bitShift: n - 1.
+	^ bound < 1024
+		ifTrue: ['<= ', bound printString, ' B']
+		ifFalse: [bound < 1048576
+			ifTrue: ['<= ', (bound // 1024) printString, ' KiB']
+			ifFalse: ['<= ', (bound // 1048576) printString, ' MiB']]
+]
+
+{ #category : 'analysis' }
+ImageMapOverview class >> sizeClassOf: aSize [
+	"The number of the size class of aSize bytes (see sizeClassCount)."
+	^ (((aSize - 1) max: 0) highBit + 1) min: self sizeClassCount
+]
+
+{ #category : 'analysis' }
+ImageMapOverview class >> sizeClassShortLabel: n [
+	"The upper bound of size class n in a few characters: 16, 512, 1K, 2M."
+	| bound |
+	bound := 1 bitShift: n - 1.
+	^ bound < 1024
+		ifTrue: [bound printString]
+		ifFalse: [bound < 1048576
+			ifTrue: [(bound // 1024) printString, 'K']
+			ifFalse: [(bound // 1048576) printString, 'M']]
 ]
 
 { #category : 'ui' }
@@ -136,6 +175,50 @@ ImageMapOverview >> gtMapFor: aView [
 		stencil: [self element]
 ]
 
+{ #category : 'views' }
+ImageMapOverview >> gtNeighboursFor: aView [
+	<gtView>
+	^ aView explicit
+		title: 'Neighbours';
+		priority: 4;
+		stencil: [ImageMapMermaid neighboursElementFor: self]
+]
+
+{ #category : 'views' }
+ImageMapOverview >> gtNeighboursTableFor: aView [
+	<gtView>
+	^ aView columnedList
+		title: 'Neighbours (table)';
+		priority: 5;
+		items: [self kindTransitionRows];
+		column: 'Kind' text: [:r | r kind];
+		column: 'Objects' text: [:r | r objects asStringWithCommas] width: 110;
+		column: 'Same kind next' text: [:r | (r sameShare * 100) rounded printString, '%'] width: 120;
+		column: 'Most often next' text: [:r | r nextShares ifEmpty: [''] ifNotEmpty: [:s | | a | a := s first. a key, ' ', (a value * 100) rounded printString, '%']]
+]
+
+{ #category : 'views' }
+ImageMapOverview >> gtSizesFor: aView [
+	<gtView>
+	^ aView explicit
+		title: 'Sizes';
+		priority: 6;
+		stencil: [ImageMapMermaid sizesElementFor: self]
+]
+
+{ #category : 'views' }
+ImageMapOverview >> gtSizesTableFor: aView [
+	<gtView>
+	^ aView columnedList
+		title: 'Sizes (table)';
+		priority: 7;
+		items: [self sizeClassRows];
+		column: 'Size' text: [:r | r label] width: 90;
+		column: 'Objects' text: [:r | r objects asStringWithCommas] width: 110;
+		column: 'MiB' text: [:r | ((r bytes / 1048576.0) printShowingDecimalPlaces: 2)] width: 80;
+		column: 'Most bytes' text: [:r | r objects > 0 ifTrue: [r dominantKind] ifFalse: ['']]
+]
+
 { #category : 'ui' }
 ImageMapOverview >> heading: aString [
 	^ ImageMapViewer new heading: aString
@@ -165,6 +248,28 @@ ImageMapOverview >> kindTotals [
 	pages do: [:p | 1 to: sums size do: [:i | sums at: i put: (sums at: i) + (p byKind at: i)]].
 	^ ((1 to: sums size) collect: [:i | (ImageMapCell kinds at: i) -> (sums at: i)])
 		asSortedCollection: [:a :b | a value >= b value]
+]
+
+{ #category : 'analysis' }
+ImageMapOverview >> kindTransitionRows [
+	"One ImageMapRow per kind that has objects: which kinds follow it in heap order. Answers an empty Array for an overview scanned before the transitions were counted."
+	| kinds nk |
+	transitions ifNil: [^ #()].
+	kinds := ImageMapCell kinds.
+	nk := kinds size.
+	^ ((1 to: nk) collect: [:i | | counts sum |
+		counts := (1 to: nk) collect: [:j | transitions at: (i - 1) * nk + j].
+		sum := counts inject: 0 into: [:a :b | a + b].
+		sum > 0
+			ifTrue: [ImageMapRow new
+				kind: (kinds at: i);
+				objects: sum;
+				sameShare: (counts at: i) / sum asFloat;
+				nextShares: (((1 to: nk) select: [:j | (counts at: j) > 0]
+					thenCollect: [:j | (kinds at: j) -> ((counts at: j) / sum asFloat)])
+					asSortedCollection: [:a :b | a value >= b value]) asArray;
+				yourself]
+			ifFalse: [nil]]) select: [:r | r notNil]
 ]
 
 { #category : 'ui' }
@@ -248,14 +353,20 @@ ImageMapOverview >> refreshDetail [
 
 { #category : 'private' }
 ImageMapOverview >> scanPageBytes: aSize slow: aBoolean [
-	| kinds cache i off nextBoundary cur |
+	"One pass over the heap. Besides the pages and the class statistics it counts which kind follows which kind (transitions) and how many objects and bytes each kind has in each size class (sizeCounts, sizeBytes)."
+	| kinds nk cache i off nextBoundary cur tr sc sb pk |
 	kinds := ImageMapCell kinds.
+	nk := kinds size.
 	cache := IdentityDictionary new.
 	pageBytes := aSize.
 	pages := OrderedCollection new.
 	scannedAt := DateAndTime now.
+	tr := Array new: nk * nk withAll: 0.
+	sc := Array new: self class sizeClassCount * nk withAll: 0.
+	sb := Array new: self class sizeClassCount * nk withAll: 0.
+	pk := 0.
 	i := 0. off := 0. nextBoundary := 0.
-	SystemNavigation default allObjectsDo: [:o | | c e k sz |
+	SystemNavigation default allObjectsDo: [:o | | c e k sz b ix |
 		c := aBoolean ifTrue: [[o class] on: Error do: [Object]] ifFalse: [o class].
 		e := cache at: c ifAbsent: [nil].
 		e ifNil: [e := cache at: c put: (Array with: (kinds indexOf: (ImageMapCell kindOfClass: c)) with: 0 with: 0)].
@@ -263,10 +374,16 @@ ImageMapOverview >> scanPageBytes: aSize slow: aBoolean [
 		sz := aBoolean ifTrue: [[o sizeInMemory] on: Error do: [16]] ifFalse: [o sizeInMemory].
 		sz isInteger ifFalse: [sz := c isVariable ifTrue: [16] ifFalse: [c byteSizeOfInstance]].
 		off >= nextBoundary ifTrue: [
-			cur := ImageMapPage new setFirstObject: o index: i offset: off kinds: kinds size.
+			cur := ImageMapPage new setFirstObject: o index: i offset: off kinds: nk.
 			pages add: cur.
 			nextBoundary := (off // aSize + 1) * aSize].
 		cur addObject: sz kind: k.
+		pk > 0 ifTrue: [ix := (pk - 1) * nk + k. tr at: ix put: (tr at: ix) + 1].
+		pk := k.
+		b := self class sizeClassOf: sz.
+		ix := (b - 1) * nk + k.
+		sc at: ix put: (sc at: ix) + 1.
+		sb at: ix put: (sb at: ix) + sz.
 		e at: 2 put: (e at: 2) + sz.
 		e at: 3 put: (e at: 3) + 1.
 		off := off + sz.
@@ -274,7 +391,10 @@ ImageMapOverview >> scanPageBytes: aSize slow: aBoolean [
 	total := i.
 	totalBytes := off.
 	pages := pages asArray.
-	classStats := cache
+	classStats := cache.
+	transitions := tr.
+	sizeCounts := sc.
+	sizeBytes := sb
 ]
 
 { #category : 'accessing' }
@@ -315,6 +435,44 @@ ImageMapOverview >> sideElement [
 ]
 
 { #category : 'accessing' }
+ImageMapOverview >> sizeBytes [
+	"The same as sizeCounts, in bytes."
+	^ sizeBytes
+]
+
+{ #category : 'analysis' }
+ImageMapOverview >> sizeClassRows [
+	"One ImageMapRow per size class from the smallest to the biggest that has objects (classes in between may be empty): label, objects, bytes and the kind with most bytes. Answers an empty Array for an overview scanned before sizes were counted."
+	| kinds nk rows first last |
+	sizeCounts ifNil: [^ #()].
+	kinds := ImageMapCell kinds.
+	nk := kinds size.
+	rows := (1 to: self class sizeClassCount) collect: [:b | | objs bytes best |
+		objs := 0. bytes := 0. best := 1.
+		1 to: nk do: [:k | | ix |
+			ix := (b - 1) * nk + k.
+			objs := objs + (sizeCounts at: ix).
+			bytes := bytes + (sizeBytes at: ix).
+			(sizeBytes at: ix) > (sizeBytes at: (b - 1) * nk + best) ifTrue: [best := k]].
+		ImageMapRow new
+			label: (self class sizeClassLabel: b);
+			shortLabel: (self class sizeClassShortLabel: b);
+			objects: objs;
+			bytes: bytes;
+			dominantKind: (kinds at: best);
+			yourself].
+	first := rows detect: [:r | r objects > 0] ifNone: [^ #()].
+	last := rows reverse detect: [:r | r objects > 0].
+	^ rows copyFrom: (rows indexOf: first) to: (rows indexOf: last)
+]
+
+{ #category : 'accessing' }
+ImageMapOverview >> sizeCounts [
+	"Flat Array, size classes x kinds: objects per size class and kind, at (class - 1) * kinds size + kind. Nil in an older overview."
+	^ sizeCounts
+]
+
+{ #category : 'accessing' }
 ImageMapOverview >> total [
 	^ total
 ]
@@ -322,4 +480,10 @@ ImageMapOverview >> total [
 { #category : 'accessing' }
 ImageMapOverview >> totalBytes [
 	^ totalBytes
+]
+
+{ #category : 'accessing' }
+ImageMapOverview >> transitions [
+	"Flat Array, kinds x kinds: the number of times an object of kind i is directly followed by an object of kind j, at (i - 1) * kinds size + j. Nil in an overview scanned before this was counted."
+	^ transitions
 ]

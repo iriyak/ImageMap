@@ -13,6 +13,52 @@ Class {
 	#tag : 'Mermaid'
 }
 
+{ #category : 'sources' }
+ImageMapMermaid class >> chartTitle: aTitle unit: aUnit labels: labels values: values [
+	^ self chartTitle: aTitle unit: aUnit labels: labels values: values horizontal: false
+]
+
+{ #category : 'sources' }
+ImageMapMermaid class >> chartTitle: aTitle unit: aUnit labels: labels values: values horizontal: aBoolean [
+	"A Mermaid bar chart (xychart-beta), vertical or horizontal. The labels are quoted. The value axis runs from a little below the smallest value (or 0) to a little above the biggest."
+	| out top bottom |
+	top := (values inject: 0 into: [:a :b | a max: b]) * 1.1 max: 1.
+	bottom := (values inject: 0 into: [:a :b | a min: b]) * 1.1.
+	out := WriteStream on: String new.
+	out nextPutAll: 'xychart-beta'; nextPutAll: (aBoolean ifTrue: [' horizontal'] ifFalse: ['']); lf.
+	out nextPutAll: '  title "', aTitle, '"'; lf.
+	out nextPutAll: '  x-axis ['.
+	labels do: [:l | out nextPut: $"; nextPutAll: l; nextPut: $"] separatedBy: [out nextPutAll: ', '].
+	out nextPutAll: ']'; lf.
+	out nextPutAll: '  y-axis "', aUnit, '" ', bottom floor printString, ' --> ', top ceiling printString; lf.
+	out nextPutAll: '  bar ['.
+	values do: [:v | out nextPutAll: ((v * 1.0) printShowingDecimalPlaces: 2)] separatedBy: [out nextPutAll: ', '].
+	out nextPutAll: ']'; lf.
+	^ out contents
+]
+
+{ #category : 'ui' }
+ImageMapMermaid class >> classChangesElementFor: aDiff [
+	^ (aDiff classChanges anySatisfy: [:r | (r at: 2) abs >= 1024])
+		ifTrue: [self elementForSource: (self classChangesSourceFor: aDiff)]
+		ifFalse: [(self messageElement: 'No class has changed by 1 KiB or more.') asScrollableElement]
+]
+
+{ #category : 'sources' }
+ImageMapMermaid class >> classChangesSourceFor: aDiff [
+	"A horizontal bar chart of the classes whose bytes changed most: the ten that grew most and the five that shrank most, in KiB. Changes under 1 KiB are left out; the table view has all of them."
+	| changes grew shrank rows |
+	changes := aDiff classChanges select: [:r | (r at: 2) abs >= 1024].
+	grew := (changes select: [:r | (r at: 2) > 0]) first: ((changes count: [:r | (r at: 2) > 0]) min: 10).
+	shrank := (changes select: [:r | (r at: 2) < 0]) last: ((changes count: [:r | (r at: 2) < 0]) min: 5).
+	rows := grew, shrank.
+	^ self chartTitle: 'Classes whose bytes changed most'
+		unit: 'KiB'
+		labels: (rows collect: [:r | | n | n := (r at: 1) name asString. n size > 28 ifTrue: [(n first: 27), '...'] ifFalse: [n]])
+		values: (rows collect: [:r | (r at: 2) / 1024.0])
+		horizontal: true
+]
+
 { #category : 'ui' }
 ImageMapMermaid class >> classesElementFor: anOverview [
 	^ self elementForSource: (self classesSourceFor: anOverview)
@@ -53,19 +99,21 @@ ImageMapMermaid class >> classesSourceFor: anOverview [
 
 { #category : 'ui' }
 ImageMapMermaid class >> elementForSource: aMermaidString [
-	"Answer a scrollable element with the diagram, or a label that says why it could not be drawn."
-	^ (self isAvailable
-		ifFalse: [self messageElement: 'Pele2svg is not loaded. This diagram is drawn with Pele2svg (https://github.com/iriyak/pele2svg), which is optional.']
-		ifTrue: [[(Smalltalk at: #Pele2svg) new asElement: aMermaidString]
-			on: Error
-			do: [:e | self messageElement: 'The diagram could not be drawn: ', e messageText]])
-		asScrollableElement
+	"The same as plainElementForSource:, in a scrollable element."
+	^ (self plainElementForSource: aMermaidString) asScrollableElement
 ]
 
 { #category : 'testing' }
 ImageMapMermaid class >> isAvailable [
 	"Is Pele2svg loaded?"
 	^ Smalltalk includesKey: #Pele2svg
+]
+
+{ #category : 'private' }
+ImageMapMermaid class >> kindClassDefsOn: aStream [
+	"The Mermaid classDef lines that give each kind its colour: k_<kind>."
+	ImageMapCell kinds do: [:k |
+		aStream nextPutAll: '  classDef k_', k, ' fill:#', (ImageMapCell colorFor: k) asHexString, ',stroke:#444,color:#111'; lf]
 ]
 
 { #category : 'private' }
@@ -83,4 +131,75 @@ ImageMapMermaid class >> messageElement: aString [
 		aptitude: BrGlamorousLabelAptitude;
 		text: aString;
 		padding: (BlInsets all: 12)
+]
+
+{ #category : 'ui' }
+ImageMapMermaid class >> neighboursElementFor: anOverview [
+	^ anOverview transitions
+		ifNil: [self notScannedElement]
+		ifNotNil: [self elementForSource: (self neighboursSourceFor: anOverview)]
+]
+
+{ #category : 'sources' }
+ImageMapMermaid class >> neighboursSourceFor: anOverview [
+	"A flowchart of the kinds: an arrow from kind A to kind B when an object of kind A is directly followed, in heap order, by an object of kind B at least 5% of the times. Each node says how often its kind is followed by the same kind."
+	| out rows |
+	out := WriteStream on: String new.
+	rows := anOverview kindTransitionRows.
+	out nextPutAll: 'flowchart LR'; lf.
+	self kindClassDefsOn: out.
+	rows do: [:r |
+		out nextPutAll: '  n_', r kind, '["', r kind, '<br/>', r objects printString, ' objects<br/>followed by the same kind ', (r sameShare * 100) rounded printString, '%"]:::k_', r kind; lf].
+	rows do: [:r |
+		r nextShares do: [:a |
+			(a value >= 0.05 and: [a key ~~ r kind]) ifTrue: [
+				out nextPutAll: '  n_', r kind, ' -->|"', (a value * 100) rounded printString, '%"| n_', a key; lf]]].
+	^ out contents
+]
+
+{ #category : 'ui' }
+ImageMapMermaid class >> notScannedElement [
+	^ (self messageElement: 'This overview was scanned before this was counted. Scan again with ImageMapOverview scan.') asScrollableElement
+]
+
+{ #category : 'ui' }
+ImageMapMermaid class >> plainElementForSource: aMermaidString [
+	"Answer an element with the diagram, or a label that says why it could not be drawn."
+	^ self isAvailable
+		ifFalse: [self messageElement: 'Pele2svg is not loaded. This diagram is drawn with Pele2svg (https://github.com/iriyak/pele2svg), which is optional.']
+		ifTrue: [[(Smalltalk at: #Pele2svg) new asElement: aMermaidString]
+			on: Error
+			do: [:e | self messageElement: 'The diagram could not be drawn: ', e messageText]]
+]
+
+{ #category : 'sources' }
+ImageMapMermaid class >> sizesBytesSourceFor: anOverview [
+	| rows |
+	rows := anOverview sizeClassRows.
+	^ self chartTitle: 'Bytes by size class (upper bound of the size, in bytes)'
+		unit: 'MiB'
+		labels: (rows collect: [:r | r shortLabel])
+		values: (rows collect: [:r | r bytes / 1048576.0])
+]
+
+{ #category : 'ui' }
+ImageMapMermaid class >> sizesElementFor: anOverview [
+	| box |
+	anOverview sizeCounts ifNil: [^ self notScannedElement].
+	box := BlElement new
+		layout: BlLinearLayout vertical;
+		constraintsDo: [:x | x horizontal fitContent. x vertical fitContent].
+	box addChild: (self plainElementForSource: (self sizesBytesSourceFor: anOverview)).
+	box addChild: (self plainElementForSource: (self sizesObjectsSourceFor: anOverview)).
+	^ box asScrollableElement
+]
+
+{ #category : 'sources' }
+ImageMapMermaid class >> sizesObjectsSourceFor: anOverview [
+	| rows |
+	rows := anOverview sizeClassRows.
+	^ self chartTitle: 'Objects by size class (upper bound of the size, in bytes)'
+		unit: 'thousands of objects'
+		labels: (rows collect: [:r | r shortLabel])
+		values: (rows collect: [:r | r objects / 1000.0])
 ]

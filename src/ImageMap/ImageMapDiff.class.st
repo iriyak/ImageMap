@@ -5,6 +5,8 @@ The first object of each baseline page is an anchor. I collect garbage, walk the
 
 I draw the pages as blocks: filled for growth, outlined for shrinkage, coloured by the kind that changed most. My side panel lists the change by kind and the biggest class changes (`classChanges` has the change in bytes and objects for every class).
 
+My Class changes view draws the classes whose bytes changed most as a bar chart (ImageMapMermaid, needs Pele2svg), and Class changes (table) lists them all.
+
 I am experimental.
 "
 Class {
@@ -222,6 +224,29 @@ ImageMapDiff >> element [
 	body addChild: mapHolder; addChild: self sideElement.
 	root addChild: body.
 	^ root
+]
+
+{ #category : 'views' }
+ImageMapDiff >> gtClassChangesFor: aView [
+	<gtView>
+	^ aView explicit
+		title: 'Class changes';
+		priority: 2;
+		stencil: [ImageMapMermaid classChangesElementFor: self]
+]
+
+{ #category : 'views' }
+ImageMapDiff >> gtClassChangesTableFor: aView [
+	<gtView>
+	^ aView columnedList
+		title: 'Class changes (table)';
+		priority: 3;
+		items: [self classChanges select: [:r | (r at: 2) ~= 0 or: [(r at: 3) ~= 0]]];
+		column: 'Class' text: [:r | (r at: 1) name];
+		column: 'Change KiB' text: [:r | ((r at: 2) / 1024.0) printShowingDecimalPlaces: 1] width: 110;
+		column: 'Change objects' text: [:r | (r at: 3) printString] width: 120;
+		column: 'Before KiB' text: [:r | ((r at: 4) / 1024.0) printShowingDecimalPlaces: 1] width: 110;
+		column: 'After KiB' text: [:r | ((r at: 5) / 1024.0) printShowingDecimalPlaces: 1] width: 110
 ]
 
 { #category : 'views' }

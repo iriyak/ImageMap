@@ -60,7 +60,7 @@ sizeInMemory
 Two details:
 
 - Some objects answer something that is not an Integer (for example proxies such as a `MessageCatcher` that turn every message into data). For those, the scan uses the size of the class instead.
-- The `class` message goes through the class index, and a proxy may override it. Scans therefore run with one outer exception handler and fall back to a slow path with a handler for each object only when the fast path fails. The per-object handler makes a scan 5 to 24 s instead of about 1 s.
+- A scan runs with no handler around each object and is repeated on a slow path, with a handler for each object, only if the fast path raises an error. A handler for every object made a scan take 5 to 24 s instead of about 1 s.
 
 ### 2.3 Offset: a running total, not an address
 
@@ -98,9 +98,19 @@ Comparing two heaps object by object would need object identity across two momen
 
 Because the pages are spans between landmarks and not memory ranges, the diff answers "which part of the heap, in heap order, grew by what kinds of objects". It does not answer "which objects are new". The per-class change (`classChanges`) comes from the class statistics of the two scans and does not depend on the anchors.
 
+### 3.4 Counts in the scan, and the diagrams
+
+The same pass that builds the pages of the overview also counts, per object, which kind follows which in heap order (`transitions`, kinds x kinds) and how many objects and bytes each kind has in each size class (`sizeCounts`, `sizeBytes`). A size class is a power of two: class n holds the sizes above 2^(n-1) and up to 2^n bytes. Both are small arrays updated in the loop, and they added about 15% to the time of a scan. They are what the Neighbours and Sizes views show. An overview from before they were counted answers nil for them, and the views say "scan again".
+
+The diagrams are Mermaid sources built in `ImageMapMermaid` (a sankey for the classes, a flowchart for the neighbours and for the references of an object, bar charts for the sizes and the class changes) and drawn by Pele2svg, which runs Node.js: one external process, about 0.4 s per diagram. Pele2svg is optional, so `ImageMapMermaid` checks that it is loaded and turns any failure into a label.
+
+Two things about Mermaid that cost time. A sankey with many nodes needs its height set (`%%{init: {"sankey": {"height": n}}}%%`); without it every node is one pixel high. A label that contains parentheses or brackets has to be quoted.
+
+`ImageMapReferences` shows what one object points to: its named variables, then its indexed slots (the literals for a compiled method), at most 24. Slots that point to the same object share one arrow. Who points to the object is not shown, because `pointersTo` scans the heap (about 1.7 s in the image used here).
+
 ## 4. Limits
 
-- Indexes and offsets are valid for one moment; scans are not atomic with respect to other processes allocating, but the snapshot array keeps the picture self-consistent.
+- Indexes and offsets are valid for one moment. Within one scan the snapshot array keeps the picture self-consistent.
 - Offsets are not addresses, and the picture says nothing about fragmentation, free space or the split between new and old space.
 - A scan briefly needs memory for the snapshot array.
 - The diff is a heuristic built on anchors and can lose resolution when many anchors are collected.
