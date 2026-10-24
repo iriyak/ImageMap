@@ -103,6 +103,8 @@ ImageMapDiff against: ImageMapOverview scan.
 - **The diff follows anchors.** The first object of every baseline page is an anchor. The diff walks the heap now, recognises the anchors one after another, and counts what lies between them. A page whose anchor has been collected is folded into the page before it, and objects added after the last baseline page appear as `new` blocks. If the heap order of the anchors has changed, the side panel says so.
 - **Only reading.** The scans read each object's class and size. They do not modify the objects.
 
+How the object memory is read, and the logic behind the three views, is described in [docs/IMPLEMENTATION.md](docs/IMPLEMENTATION.md).
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
