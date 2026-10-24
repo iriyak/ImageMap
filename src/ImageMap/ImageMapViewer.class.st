@@ -23,12 +23,12 @@ Class {
 	#package : 'ImageMap'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'instance creation' }
 ImageMapViewer class >> on: aSnapshot [
 	^ self new setSnapshot: aSnapshot
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'opening' }
 ImageMapViewer class >> openAt: aStart [
 	"Open an inspector on a viewer positioned at aStart. The inspector is opened in the UI process, so this is safe to call from any process (e.g. an MCP/REPL worker); GT text editors assert they run in the UI process."
 	| aViewer |
@@ -37,7 +37,7 @@ ImageMapViewer class >> openAt: aStart [
 	^ aViewer
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapViewer class >> totalObjects [
 	| n |
 	n := 0.
@@ -45,7 +45,7 @@ ImageMapViewer class >> totalObjects [
 	^ n
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapViewer >> buildRoot [
 	| body |
 	root := BlElement new
@@ -68,12 +68,12 @@ ImageMapViewer >> buildRoot [
 	^ root
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapViewer >> element [
 	^ self buildRoot
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'navigation' }
 ImageMapViewer >> goto: aStart [
 	"Move the window. The total object count can shrink after a GC, so when the window comes back short, recount and clamp again."
 	| s |
@@ -86,7 +86,7 @@ ImageMapViewer >> goto: aStart [
 	self refresh
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'navigation' }
 ImageMapViewer >> gotoFromEditor [
 	| n |
 	n := (editor text asString reject: [:ch | ch = $, or: [ch isSeparator]]) asInteger.
@@ -94,7 +94,7 @@ ImageMapViewer >> gotoFromEditor [
 	self goto: n
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'views' }
 ImageMapViewer >> gtMapFor: aView [
 	<gtView>
 	^ aView explicit
@@ -103,7 +103,7 @@ ImageMapViewer >> gtMapFor: aView [
 		stencil: [self element]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapViewer >> heading: aString [
 	^ BrLabel new
 		aptitude: BrGlamorousLabelAptitude new;
@@ -112,7 +112,7 @@ ImageMapViewer >> heading: aString [
 		yourself
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapViewer >> kindRow: aKind count: anInteger [
 	| row sq |
 	row := BlElement new
@@ -128,17 +128,17 @@ ImageMapViewer >> kindRow: aKind count: anInteger [
 	^ row
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapViewer >> line: aString [
 	^ BrLabel new aptitude: BrGlamorousLabelAptitude new; text: aString; yourself
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'printing' }
 ImageMapViewer >> printOn: aStream [
 	aStream nextPutAll: 'ImageMapViewer on '; print: snapshot
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapViewer >> refresh [
 	| scroll |
 	mapHolder removeChildren.
@@ -151,7 +151,7 @@ ImageMapViewer >> refresh [
 	self refreshControls
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapViewer >> refreshControls [
 	editor text: snapshot start printString.
 	infoLabel text: snapshot printString.
@@ -159,7 +159,7 @@ ImageMapViewer >> refreshControls [
 	thumb size: ((count / total * 360) rounded max: 4) @ 16
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapViewer >> refreshDetail [
 	| btn obj |
 	detailBox removeChildren.
@@ -179,7 +179,7 @@ ImageMapViewer >> refreshDetail [
 	detailBox addChild: btn
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapViewer >> refreshSide [
 	sidePanel removeChildren.
 	sidePanel addChild: (self heading: 'Kinds in this window').
@@ -192,7 +192,7 @@ ImageMapViewer >> refreshSide [
 	self refreshDetail
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapViewer >> select: aCell element: anElement [
 	selectedElement ifNotNil: [:prev | prev border: BlBorder empty].
 	selectedElement := anElement.
@@ -201,19 +201,19 @@ ImageMapViewer >> select: aCell element: anElement [
 	self refreshDetail
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'initialization' }
 ImageMapViewer >> setSnapshot: aSnapshot [
 	snapshot := aSnapshot.
 	count := 1024.
 	total := self class totalObjects
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapViewer >> snapshot [
 	^ snapshot
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapViewer >> toolbar [
 	| bar prev next go |
 	bar := BlElement new
@@ -248,7 +248,7 @@ ImageMapViewer >> toolbar [
 	^ bar
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapViewer >> trackElement [
 	thumb := BlElement new size: 4 @ 16; background: (Color fromHexString: 'FFB52E').
 	track := BlElement new

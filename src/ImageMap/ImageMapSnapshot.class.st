@@ -13,12 +13,12 @@ Class {
 	#package : 'ImageMap'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'instance creation' }
 ImageMapSnapshot class >> start: aStart count: aCount [
 	^ self new setStart: aStart count: aCount
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'instance creation' }
 ImageMapSnapshot class >> startingAt: anObject count: aCount [
 	"Answer the window that starts at anObject's CURRENT index in heap order, or nil if the object no longer exists."
 	| i found |
@@ -29,32 +29,32 @@ ImageMapSnapshot class >> startingAt: anObject count: aCount [
 	^ found ifTrue: [self start: i count: aCount] ifFalse: [nil]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapSnapshot >> cells [
 	^ cells
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapSnapshot >> columns [
 	^ columns ifNil: [16]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapSnapshot >> count [
 	^ cells size
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapSnapshot >> endIndex [
 	^ cells isEmpty ifTrue: [start] ifFalse: [cells last index]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapSnapshot >> endOffset [
 	^ cells isEmpty ifTrue: [0] ifFalse: [cells last offset + cells last bytes]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'views' }
 ImageMapSnapshot >> gtMapFor: aView [
 	<gtView>
 	^ aView explicit
@@ -63,13 +63,13 @@ ImageMapSnapshot >> gtMapFor: aView [
 		stencil: [(ImageMapViewer on: self) element]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'analysis' }
 ImageMapSnapshot >> kindCounts [
 	"Answer an Array of kind -> count, most frequent first."
 	^ (cells collect: #kind) asBag sortedCounts collect: [:a | a value -> a key]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapSnapshot >> legendElement [
 	| row |
 	row := BlElement new
@@ -90,12 +90,12 @@ ImageMapSnapshot >> legendElement [
 	^ row
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapSnapshot >> mapElement [
 	^ self mapElementOnSelect: [:cell :el | el phlow spawnObject: cell object]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapSnapshot >> mapElementOnSelect: aBlock [
 	| pitch cellSize labelWidth rows root |
 	pitch := 14. cellSize := 12. labelWidth := 84.
@@ -123,7 +123,7 @@ ImageMapSnapshot >> mapElementOnSelect: aBlock [
 	^ root
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'printing' }
 ImageMapSnapshot >> printOn: aStream [
 	aStream
 		nextPutAll: 'ImageMap #'; print: start; nextPutAll: '..#'; print: self endIndex;
@@ -131,7 +131,7 @@ ImageMapSnapshot >> printOn: aStream [
 		nextPutAll: '..+'; nextPutAll: (self endOffset printStringBase: 16); nextPut: $)
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'private' }
 ImageMapSnapshot >> scanTo: anEnd slow: aBoolean [
 	"Walk objects in heap order up to index anEnd, accumulating byte offsets; answer cells for indexes >= start.
 	The fast path has no per-object exception handler (it is ~20x faster); the slow path guards each object.
@@ -154,19 +154,19 @@ ImageMapSnapshot >> scanTo: anEnd slow: aBoolean [
 	^ list asArray
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'initialization' }
 ImageMapSnapshot >> setStart: aStart count: aCount [
 	start := aStart.
 	cells := [self scanTo: aStart + aCount slow: false]
 		on: Error do: [:e | self scanTo: aStart + aCount slow: true]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapSnapshot >> start [
 	^ start
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapSnapshot >> startOffset [
 	^ cells isEmpty ifTrue: [0] ifFalse: [cells first offset]
 ]

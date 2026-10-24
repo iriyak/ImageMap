@@ -18,12 +18,12 @@ Class {
 	#package : 'ImageMap'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'colors' }
 ImageMapCell class >> colorFor: aKind [
 	^ self colors at: aKind ifAbsent: [Color gray]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'colors' }
 ImageMapCell class >> colors [
 	^ Colors ifNil: [Colors := Dictionary newFrom: {
 		#class -> (Color fromHexString: '4ECDC4').
@@ -44,12 +44,12 @@ ImageMapCell class >> colors [
 		#other -> (Color fromHexString: 'FFFFFF') }]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'classification' }
 ImageMapCell class >> kindOf: o [
 	^ self kindOfClass: ([o class] on: Error do: [^ #other])
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'classification' }
 ImageMapCell class >> kindOfClass: c [
 	(c includesBehavior: CompiledCode) ifTrue: [^ #method].
 	(c isMeta or: [c == Metaclass]) ifTrue: [^ #class].
@@ -68,78 +68,78 @@ ImageMapCell class >> kindOfClass: c [
 	^ #object
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapCell class >> kinds [
 	^ #(#class #method #symbol #string #array #methoddict #dictionary #association #ordered #object #bytes #words #weak #context #block #other)
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapCell class >> legendKinds [
 	"Kinds shown in the legend (the catch-all #other is left out)."
 	^ self kinds reject: [:k | k == #other]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'colors' }
 ImageMapCell class >> resetColors [
 	Colors := nil
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapCell >> bytes [
 	^ bytes
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapCell >> bytes: anObject [
 	bytes := anObject
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapCell >> className [
 	^ [object class name] on: Error do: ['?']
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapCell >> index [
 	^ index
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapCell >> index: anObject [
 	index := anObject
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapCell >> kind [
 	^ kind
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapCell >> kind: anObject [
 	kind := anObject
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'printing' }
 ImageMapCell >> label [
 	^ '#', index printString, '  +', (offset printStringBase: 16), '  ', kind, '  ', self className, '  ', bytes printString, ' B'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapCell >> object [
 	^ object
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapCell >> object: anObject [
 	object := anObject
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapCell >> offset [
 	^ offset
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapCell >> offset: anObject [
 	offset := anObject
 ]

@@ -29,40 +29,40 @@ Class {
 	#package : 'ImageMap'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'instance creation' }
 ImageMapDiff class >> against: aBaseline [
 	^ self new setBaseline: aBaseline
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'baseline' }
 ImageMapDiff class >> baseline [
 	^ Baseline
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'baseline' }
 ImageMapDiff class >> baseline: anOverview [
 	Baseline := anOverview
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'baseline' }
 ImageMapDiff class >> baselineDescription [
 	^ Baseline
 		ifNil: ['none yet']
 		ifNotNil: [:b | 'taken at ', b scannedAt asTime printString, ' (', b total printString, ' objects)']
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'baseline' }
 ImageMapDiff class >> clearBaseline [
 	Baseline := nil
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'baseline' }
 ImageMapDiff class >> compareToBaseline [
 	Baseline ifNil: [^ self error: 'No baseline yet: run ImageMapDiff takeBaseline first'].
 	^ self against: Baseline
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'opening' }
 ImageMapDiff class >> open [
 	"Compare the heap now with the baseline and open the result (in the UI process)."
 	| aDiff |
@@ -71,38 +71,38 @@ ImageMapDiff class >> open [
 	^ aDiff
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'baseline' }
 ImageMapDiff class >> takeBaseline [
 	"Scan the heap now and keep the result as the baseline for later comparisons."
 	^ Baseline := ImageMapOverview scan
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiff >> afterBytes [
 	^ afterBytes
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiff >> afterKindBytes [
 	^ afterKindBytes
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiff >> afterTotal [
 	^ afterTotal
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiff >> before [
 	^ before
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiff >> beforeKindBytes [
 	^ beforeKindBytes
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapDiff >> cellLabel: aCell [
 	| s |
 	aCell isMerged ifTrue: [^ 'baseline page ', aCell pageNumber printString, ': anchor gone, counted in page ', aCell mergedInto printString].
@@ -114,23 +114,23 @@ ImageMapDiff >> cellLabel: aCell [
 	^ s contents
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiff >> cells [
 	^ cells
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiff >> classChanges [
 	"Array of Array(class, byte change, object count change, bytes before, bytes after), biggest increase first."
 	^ classChanges
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapDiff >> classRow: anEntry [
 	^ self line: ((anEntry at: 1) name), '  ', (self signedBytes: (anEntry at: 2)), '  (', ((anEntry at: 3) >= 0 ifTrue: ['+'] ifFalse: ['']), (anEntry at: 3) printString, ' objects)'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'private' }
 ImageMapDiff >> computeCells [
 	| nk pagesA p pb leaders leaderOf cur groupBytes groupSizes last tailKinds tailTotal keys |
 	nk := ImageMapCell kinds size.
@@ -190,7 +190,7 @@ ImageMapDiff >> computeCells [
 	classChanges := classChanges asArray
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapDiff >> element [
 	| root body mapHolder scroll |
 	selectedElement := nil.
@@ -217,7 +217,7 @@ ImageMapDiff >> element [
 	^ root
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'views' }
 ImageMapDiff >> gtMapFor: aView [
 	<gtView>
 	^ aView explicit
@@ -226,18 +226,18 @@ ImageMapDiff >> gtMapFor: aView [
 		stencil: [self element]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapDiff >> heading: aString [
 	^ ImageMapViewer new heading: aString
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'testing' }
 ImageMapDiff >> isFullyAligned [
 	"True when every anchor that is still alive was met in order (anchors that were collected are fine)."
 	^ (before pages count: [:pg | pg isAnchorAlive]) = matchedCount
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapDiff >> kindRow: aKind index: k [
 	| row sq a b |
 	a := beforeKindBytes at: k.
@@ -255,17 +255,17 @@ ImageMapDiff >> kindRow: aKind index: k [
 	^ row
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapDiff >> line: aString [
 	^ ImageMapViewer new line: aString
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiff >> lostAnchors [
 	^ before pages count: [:pg | pg isAnchorAlive not]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapDiff >> mapElementOnSelect: aBlock [
 	| pitch cellSize labelWidth cols rows root |
 	pitch := 22. cellSize := 20. labelWidth := 84. cols := 16.
@@ -308,12 +308,12 @@ ImageMapDiff >> mapElementOnSelect: aBlock [
 	^ root
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiff >> matchedCount [
 	^ matchedCount
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'formatting' }
 ImageMapDiff >> plainBytes: n [
 	| a |
 	a := n abs.
@@ -324,7 +324,7 @@ ImageMapDiff >> plainBytes: n [
 			ifFalse: [a printString, ' B']]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'printing' }
 ImageMapDiff >> printOn: aStream [
 	aStream
 		nextPutAll: 'ImageMapDiff '; print: before total; nextPutAll: ' -> '; print: afterTotal; nextPutAll: ' objects, ';
@@ -333,7 +333,7 @@ ImageMapDiff >> printOn: aStream [
 	self isFullyAligned ifFalse: [aStream nextPutAll: ' (ORDER CHANGED)']
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapDiff >> refreshDetail [
 	| btn c pg |
 	detailBox removeChildren.
@@ -365,7 +365,7 @@ ImageMapDiff >> refreshDetail [
 		detailBox addChild: btn]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'private' }
 ImageMapDiff >> scanSlow: aBoolean [
 	| kinds nk pagesA p spanKinds spanObjs cache nextJ haveNext nextAnchor cur i off isMatched |
 	kinds := ImageMapCell kinds.
@@ -411,7 +411,7 @@ ImageMapDiff >> scanSlow: aBoolean [
 	spanObjects := spanObjs
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapDiff >> select: aCell element: anElement [
 	selectedElement ifNotNil: [:prev | prev border: selectedBorder].
 	selectedElement := anElement.
@@ -421,7 +421,7 @@ ImageMapDiff >> select: aCell element: anElement [
 	self refreshDetail
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'initialization' }
 ImageMapDiff >> setBaseline: aBaseline [
 	before := aBaseline.
 	Smalltalk garbageCollect.
@@ -429,7 +429,7 @@ ImageMapDiff >> setBaseline: aBaseline [
 	self computeCells
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapDiff >> sideElement [
 	| side kindsSorted gainers losers |
 	side := BlElement new
@@ -459,7 +459,7 @@ ImageMapDiff >> sideElement [
 	^ side
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'formatting' }
 ImageMapDiff >> signedBytes: n [
 	| a |
 	a := n abs.

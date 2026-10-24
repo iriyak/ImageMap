@@ -19,7 +19,7 @@ Class {
 	#package : 'ImageMap'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'opening' }
 ImageMapOverview class >> open [
 	"Scan, then open the inspector in the UI process (safe to call from any process)."
 	| anOverview |
@@ -28,12 +28,12 @@ ImageMapOverview class >> open [
 	^ anOverview
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'instance creation' }
 ImageMapOverview class >> scan [
 	^ self scanPageBytes: 1048576
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'instance creation' }
 ImageMapOverview class >> scanPageBytes: aSize [
 	"Collect garbage first so the picture shows live objects only."
 	Smalltalk garbageCollect.
@@ -41,7 +41,7 @@ ImageMapOverview class >> scanPageBytes: aSize [
 		on: Error do: [:e | self new scanPageBytes: aSize slow: true]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapOverview >> baselineSection [
 	| box status setBtn cmpBtn row |
 	box := BlElement new
@@ -73,13 +73,13 @@ ImageMapOverview >> baselineSection [
 	^ box
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapOverview >> classStats [
 	"IdentityDictionary: class -> Array(kind index, bytes, object count), as of the scan."
 	^ classStats
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapOverview >> element [
 	| root body mapHolder scroll |
 	selectedElement := nil.
@@ -103,7 +103,7 @@ ImageMapOverview >> element [
 	^ root
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'views' }
 ImageMapOverview >> gtMapFor: aView [
 	<gtView>
 	^ aView explicit
@@ -112,12 +112,12 @@ ImageMapOverview >> gtMapFor: aView [
 		stencil: [self element]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapOverview >> heading: aString [
 	^ ImageMapViewer new heading: aString
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapOverview >> kindBytesRow: aKind bytes: b [
 	| row sq |
 	row := BlElement new
@@ -133,7 +133,7 @@ ImageMapOverview >> kindBytesRow: aKind bytes: b [
 	^ row
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'analysis' }
 ImageMapOverview >> kindTotals [
 	"Answer kind -> total bytes over all pages, biggest first."
 	| sums |
@@ -143,12 +143,12 @@ ImageMapOverview >> kindTotals [
 		asSortedCollection: [:a :b | a value >= b value]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapOverview >> line: aString [
 	^ ImageMapViewer new line: aString
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapOverview >> mapElementOnSelect: aBlock [
 	| pitch cellSize labelWidth cols rows root |
 	pitch := 22. cellSize := 20. labelWidth := 84. cols := 16.
@@ -176,27 +176,27 @@ ImageMapOverview >> mapElementOnSelect: aBlock [
 	^ root
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'formatting' }
 ImageMapOverview >> mebibytes: bytes [
 	^ ((bytes * 10 // 1048576) / 10.0) printString, ' MiB'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapOverview >> pageBytes [
 	^ pageBytes
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapOverview >> pages [
 	^ pages
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'printing' }
 ImageMapOverview >> printOn: aStream [
 	aStream nextPutAll: 'ImageMapOverview '; print: total; nextPutAll: ' objects, '; print: totalBytes // 1048576; nextPutAll: ' MiB, '; print: pages size; nextPutAll: ' pages'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapOverview >> refreshDetail [
 	| btn pg |
 	detailBox removeChildren.
@@ -222,7 +222,7 @@ ImageMapOverview >> refreshDetail [
 	detailBox addChild: btn
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'private' }
 ImageMapOverview >> scanPageBytes: aSize slow: aBoolean [
 	| kinds cache i off nextBoundary cur |
 	kinds := ImageMapCell kinds.
@@ -253,12 +253,12 @@ ImageMapOverview >> scanPageBytes: aSize slow: aBoolean [
 	classStats := cache
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapOverview >> scannedAt [
 	^ scannedAt
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapOverview >> select: aPage element: anElement [
 	selectedElement ifNotNil: [:prev | prev border: BlBorder empty].
 	selectedElement := anElement.
@@ -267,7 +267,7 @@ ImageMapOverview >> select: aPage element: anElement [
 	self refreshDetail
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ui' }
 ImageMapOverview >> sideElement [
 	| side |
 	side := BlElement new
@@ -290,12 +290,12 @@ ImageMapOverview >> sideElement [
 	^ side
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapOverview >> total [
 	^ total
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapOverview >> totalBytes [
 	^ totalBytes
 ]

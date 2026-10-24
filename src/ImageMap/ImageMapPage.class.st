@@ -18,34 +18,34 @@ Class {
 	#package : 'ImageMap'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'adding' }
 ImageMapPage >> addObject: size kind: k [
 	objectCount := objectCount + 1.
 	bytes := bytes + size.
 	byKind at: k put: (byKind at: k) + size
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapPage >> anchor [
 	^ anchor
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapPage >> anchorIsNil [
 	^ anchorIsNil
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapPage >> byKind [
 	^ byKind
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapPage >> bytes [
 	^ bytes
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'analysis' }
 ImageMapPage >> dominantKind [
 	| best |
 	best := 1.
@@ -53,38 +53,38 @@ ImageMapPage >> dominantKind [
 	^ ImageMapCell kinds at: best
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapPage >> firstIndex [
 	^ firstIndex
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapPage >> firstObject [
 	"The first object of this page, or nil if it has been garbage collected (see isAnchorAlive). Pages made by older scans hold it strongly."
 	^ anchor ifNil: [firstObject] ifNotNil: [:w | w first]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'testing' }
 ImageMapPage >> isAnchorAlive [
 	^ anchor isNil or: [anchorIsNil == true or: [anchor first notNil]]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'printing' }
 ImageMapPage >> label [
 	^ '+', (offset printStringBase: 16), '  ', objectCount printString, ' objects  ', (bytes // 1024) printString, ' KiB  mostly ', self dominantKind asString
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapPage >> objectCount [
 	^ objectCount
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapPage >> offset [
 	^ offset
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'initialization' }
 ImageMapPage >> setFirstObject: o index: i offset: off kinds: n [
 	"The anchor is held weakly so that taking a baseline does not keep that object (and what it references) alive."
 	anchor := WeakArray with: o.
@@ -94,7 +94,7 @@ ImageMapPage >> setFirstObject: o index: i offset: off kinds: n [
 	byKind := Array new: n withAll: 0
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'analysis' }
 ImageMapPage >> topKinds: n [
 	"Answer up to n associations kind -> bytes, biggest first."
 	| all |

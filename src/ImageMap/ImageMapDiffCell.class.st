@@ -17,42 +17,42 @@ Class {
 	#package : 'ImageMap'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiffCell >> afterObjects [
 	^ afterObjects
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiffCell >> afterObjects: x [
 	afterObjects := x
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiffCell >> aligned [
 	^ aligned
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiffCell >> aligned: x [
 	aligned := x
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiffCell >> deltas [
 	^ deltas
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiffCell >> deltas: x [
 	deltas := x
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'analysis' }
 ImageMapDiffCell >> dominantDelta [
 	^ deltas at: self dominantIndex
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'analysis' }
 ImageMapDiffCell >> dominantIndex [
 	"Index of the kind with the biggest absolute change."
 	| best |
@@ -61,57 +61,57 @@ ImageMapDiffCell >> dominantIndex [
 	^ best
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'analysis' }
 ImageMapDiffCell >> dominantKind [
 	^ ImageMapCell kinds at: self dominantIndex
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiffCell >> groupSize [
 	^ groupSize
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiffCell >> groupSize: x [
 	groupSize := x
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'testing' }
 ImageMapDiffCell >> isMerged [
 	^ mergedInto notNil
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiffCell >> isTail [
 	^ isTail
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiffCell >> isTail: x [
 	isTail := x
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiffCell >> mergedInto [
 	^ mergedInto
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiffCell >> mergedInto: x [
 	mergedInto := x
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiffCell >> pageNumber [
 	^ pageNumber
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ImageMapDiffCell >> pageNumber: x [
 	pageNumber := x
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'analysis' }
 ImageMapDiffCell >> topChanges: n [
 	"Up to n associations kind -> byte change, biggest absolute change first, zero changes left out."
 	| all |
@@ -120,7 +120,7 @@ ImageMapDiffCell >> topChanges: n [
 	^ all asArray first: (all size min: n)
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'analysis' }
 ImageMapDiffCell >> totalDelta [
 	^ deltas inject: 0 into: [:s :x | s + x]
 ]
