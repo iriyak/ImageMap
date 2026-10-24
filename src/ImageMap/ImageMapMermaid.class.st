@@ -3,7 +3,7 @@ I build the Mermaid sources of the diagrams in the ImageMap views, and I turn a 
 
 Pele2svg is optional. `ImageMapMermaid isAvailable` tells whether it is loaded. Without it, or when drawing fails (for example when Node.js is missing), `elementForSource:` answers a label with the reason, so the views that use me still open. Drawing starts an external process and takes about 0.4 s.
 
-`classesSourceFor:` answers a sankey diagram of an ImageMapOverview: the whole heap, its kinds, and the classes that take at least 1% of the heap.
+Each diagram has a `...SourceFor:` method (the Mermaid text) and an `...ElementFor:` method (the drawn element). Overview: `classesSourceFor:` (a sankey from the whole heap through kinds to the classes with at least 1%), `neighboursSourceFor:` (which kind follows which) and `sizesBytesSourceFor:` / `sizesObjectsSourceFor:` (bar charts per size class). Window: `classesSourceForSnapshot:` (the 14 classes with most bytes; KiB when the window is under 4 MiB). Diff: `classChangesSourceFor:` (bar chart). `sankeyStats:total:root:minShare:maxClasses:` is the sankey builder that both Classes diagrams share.
 "
 Class {
 	#name : 'ImageMapMermaid',

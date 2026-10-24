@@ -4,6 +4,7 @@ I am a window of consecutive objects, in the order SystemNavigation>>allObjectsD
 `mapElement` draws me as a 16-column block map; click a block to inspect its object. My Map view in the inspector is an ImageMapViewer. Building me walks the heap from the beginning, so it takes about a second when start is around 5,000,000.
 
 Indexes and offsets change when the garbage collector runs, so I am a picture of one moment.
+
 My Classes view draws the bytes of my objects by kind and class as a sankey diagram (the 14 classes with most bytes are named), and Classes (Mermaid) shows its source. `classStats` has the numbers in the same shape as ImageMapOverview>>classStats. The diagram needs Pele2svg.
 "
 Class {

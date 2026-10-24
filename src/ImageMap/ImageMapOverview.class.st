@@ -4,6 +4,7 @@ I am a picture of the whole heap. One pass over all objects, in the order System
 `ImageMapOverview scan` collects garbage and then scans (a few seconds for about 8 million objects). `ImageMapOverview open` does that and opens me in the UI process. `scanPageBytes:` uses another page size, but only 1 MiB has been tried in the views. I also keep the bytes and the object count per class (`classStats`), which ImageMapDiff needs.
 
 Set as baseline keeps me as the baseline for ImageMapDiff, and Compare with now opens the diff.
+
 The same pass counts which kind follows which in heap order (`transitions`) and how many objects and bytes each kind has in each size class (`sizeCounts`, `sizeBytes`). My diagram views are Classes (a sankey of bytes per kind and class), Neighbours and Sizes, each with a table or the Mermaid source next to it. They are built by ImageMapMermaid and need Pele2svg for the drawing; the numbers are in `kindTransitionRows` and `sizeClassRows`.
 "
 Class {
