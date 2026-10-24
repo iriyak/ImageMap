@@ -31,8 +31,9 @@ Class {
 	#classVars : [
 		'Baseline'
 	],
-	#category : 'ImageMap',
-	#package : 'ImageMap'
+	#category : 'ImageMap-Diff',
+	#package : 'ImageMap',
+	#tag : 'Diff'
 }
 
 { #category : 'instance creation' }

@@ -13,8 +13,9 @@ Class {
 		'start',
 		'columns'
 	],
-	#category : 'ImageMap',
-	#package : 'ImageMap'
+	#category : 'ImageMap-Window',
+	#package : 'ImageMap',
+	#tag : 'Window'
 }
 
 { #category : 'instance creation' }

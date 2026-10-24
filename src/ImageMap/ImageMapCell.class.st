@@ -16,8 +16,9 @@ Class {
 	#classVars : [
 		'Colors'
 	],
-	#category : 'ImageMap',
-	#package : 'ImageMap'
+	#category : 'ImageMap-Core',
+	#package : 'ImageMap',
+	#tag : 'Core'
 }
 
 { #category : 'colors' }

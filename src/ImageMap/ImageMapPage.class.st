@@ -16,8 +16,9 @@ Class {
 		'anchor',
 		'anchorIsNil'
 	],
-	#category : 'ImageMap',
-	#package : 'ImageMap'
+	#category : 'ImageMap-Overview',
+	#package : 'ImageMap',
+	#tag : 'Overview'
 }
 
 { #category : 'adding' }

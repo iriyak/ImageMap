@@ -17,8 +17,9 @@ Class {
 		'mergedInto',
 		'groupSize'
 	],
-	#category : 'ImageMap',
-	#package : 'ImageMap'
+	#category : 'ImageMap-Diff',
+	#package : 'ImageMap',
+	#tag : 'Diff'
 }
 
 { #category : 'accessing' }

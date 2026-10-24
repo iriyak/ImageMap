@@ -19,8 +19,9 @@ Class {
 		'classStats',
 		'scannedAt'
 	],
-	#category : 'ImageMap',
-	#package : 'ImageMap'
+	#category : 'ImageMap-Overview',
+	#package : 'ImageMap',
+	#tag : 'Overview'
 }
 
 { #category : 'opening' }
