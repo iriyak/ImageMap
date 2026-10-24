@@ -191,6 +191,77 @@
 								"uidString" : "rSny/xf/QUGldaorogRC6Q=="
 							},
 							"code" : "Metacello new\n\trepository: 'github://iriyak/ImageMap:main/src';\n\tbaseline: 'ImageMap';\n\tload"
+						},
+						{
+							"__type" : "textSnippet",
+							"children" : {
+								"__type" : "snippets",
+								"items" : [ ]
+							},
+							"createEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"createTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.023+09:00"
+								}
+							},
+							"editEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"editTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.023+09:00"
+								}
+							},
+							"uid" : {
+								"__type" : "uid",
+								"uidString" : "CyL3LmCPAk+YKY134ZoN8w=="
+							},
+							"paragraphStyle" : {
+								"__type" : "textStyle"
+							},
+							"string" : "To draw the diagrams too (see Diagrams below), load the group `Diagrams`, which adds Pele2svg, and install Pele once. Pele2svg runs Node.js 20 or newer. It is optional: without it the diagram tabs say so and everything else works."
+						},
+						{
+							"__type" : "pharoSnippet",
+							"children" : {
+								"__type" : "snippets",
+								"items" : [ ]
+							},
+							"createEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"createTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"editEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"editTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"uid" : {
+								"__type" : "uid",
+								"uidString" : "i0yhVyg/DkaKG9nWRgNnrQ=="
+							},
+							"code" : "Metacello new\n\trepository: 'github://iriyak/ImageMap:main/src';\n\tbaseline: 'ImageMap';\n\tload: 'Diagrams'.\nPele2svg installDependencies"
 						}
 					]
 				},
@@ -697,6 +768,43 @@
 								"uidString" : "Rhv8th7v/06dFd9rMu+COg=="
 							},
 							"code" : "ImageMapOverview open"
+						},
+						{
+							"__type" : "textSnippet",
+							"children" : {
+								"__type" : "snippets",
+								"items" : [ ]
+							},
+							"createEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"createTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"editEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"editTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"uid" : {
+								"__type" : "uid",
+								"uidString" : "VJrf5z4N8EyZ/N2mSaTdUQ=="
+							},
+							"paragraphStyle" : {
+								"__type" : "textStyle"
+							},
+							"string" : "The side panel of the overview has a Classes button, which opens the Classes tab (see Diagrams below)."
 						}
 					]
 				},
@@ -1089,6 +1197,470 @@
 					"__type" : "textStyle"
 				},
 				"string" : "#### What changed? (experimental)"
+			},
+			{
+				"__type" : "textSnippet",
+				"children" : {
+					"__type" : "snippets",
+					"items" : [
+						{
+							"__type" : "textSnippet",
+							"children" : {
+								"__type" : "snippets",
+								"items" : [ ]
+							},
+							"createEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"createTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"editEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"editTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"uid" : {
+								"__type" : "uid",
+								"uidString" : "3ddY7GQV2UmT02Fmmu0b0A=="
+							},
+							"paragraphStyle" : {
+								"__type" : "textStyle"
+							},
+							"string" : "These diagrams are drawn from Mermaid by Pele2svg, which starts an external Node.js process: about half a second for each diagram. `ImageMapMermaid isAvailable` tells whether Pele2svg is loaded."
+						},
+						{
+							"__type" : "pharoSnippet",
+							"children" : {
+								"__type" : "snippets",
+								"items" : [ ]
+							},
+							"createEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"createTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"editEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"editTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"uid" : {
+								"__type" : "uid",
+								"uidString" : "46nEg/0uHUKKY2FKHHvQ8A=="
+							},
+							"code" : "ImageMapMermaid isAvailable"
+						},
+						{
+							"__type" : "textSnippet",
+							"children" : {
+								"__type" : "snippets",
+								"items" : [ ]
+							},
+							"createEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"createTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"editEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"editTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"uid" : {
+								"__type" : "uid",
+								"uidString" : "JzyN1xQ7VUuKbF4CzIZQow=="
+							},
+							"paragraphStyle" : {
+								"__type" : "textStyle"
+							},
+							"string" : "The nodes of the sankey diagrams have the colour of their kind, as in the legend and in Bytes by kind. Classes shows the bytes of the whole heap as a sankey: the heap, its kinds, and the classes that take at least 1% of it. In the overview it is the Classes tab (Classes (Mermaid) has the source); this snippet scans and draws it directly:"
+						},
+						{
+							"__type" : "pharoSnippet",
+							"children" : {
+								"__type" : "snippets",
+								"items" : [ ]
+							},
+							"createEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"createTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"editEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"editTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"uid" : {
+								"__type" : "uid",
+								"uidString" : "izxwcP92zk2O42ZBySm3kw=="
+							},
+							"code" : "ImageMapMermaid classesElementFor: ImageMapOverview scan"
+						},
+						{
+							"__type" : "textSnippet",
+							"children" : {
+								"__type" : "snippets",
+								"items" : [ ]
+							},
+							"createEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"createTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"editEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"editTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"uid" : {
+								"__type" : "uid",
+								"uidString" : "ISufnHcWn0GyxQWY4cvA7g=="
+							},
+							"paragraphStyle" : {
+								"__type" : "textStyle"
+							},
+							"string" : "Neighbours shows which kind of object follows which in heap order, and Sizes shows the objects and the bytes by size class (powers of two). Both are counted in the scan of the overview. Each tab has a table next to it."
+						},
+						{
+							"__type" : "pharoSnippet",
+							"children" : {
+								"__type" : "snippets",
+								"items" : [ ]
+							},
+							"createEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"createTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"editEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"editTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"uid" : {
+								"__type" : "uid",
+								"uidString" : "Ww7iaJxI5EeDEEe03NQyqQ=="
+							},
+							"code" : "ImageMapMermaid neighboursElementFor: ImageMapOverview scan"
+						},
+						{
+							"__type" : "pharoSnippet",
+							"children" : {
+								"__type" : "snippets",
+								"items" : [ ]
+							},
+							"createEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"createTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"editEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"editTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"uid" : {
+								"__type" : "uid",
+								"uidString" : "q74sm401kkqqvCxLyNObpg=="
+							},
+							"code" : "ImageMapMermaid sizesElementFor: ImageMapOverview scan"
+						},
+						{
+							"__type" : "textSnippet",
+							"children" : {
+								"__type" : "snippets",
+								"items" : [ ]
+							},
+							"createEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"createTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"editEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"editTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"uid" : {
+								"__type" : "uid",
+								"uidString" : "xFulkP+kOk6a6vTfcV/0Rg=="
+							},
+							"paragraphStyle" : {
+								"__type" : "textStyle"
+							},
+							"string" : "A window has a Classes diagram too: the same sankey for its 1024 objects, in KiB, with the 14 classes that have most bytes named. The Classes button in the side panel of the window opens it:"
+						},
+						{
+							"__type" : "pharoSnippet",
+							"children" : {
+								"__type" : "snippets",
+								"items" : [ ]
+							},
+							"createEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"createTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"editEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"editTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"uid" : {
+								"__type" : "uid",
+								"uidString" : "t8+ko2GlGU63ATg04pm5kw=="
+							},
+							"code" : "ImageMapMermaid classesElementForSnapshot: (ImageMapSnapshot start: 5000000 count: 1024)"
+						},
+						{
+							"__type" : "textSnippet",
+							"children" : {
+								"__type" : "snippets",
+								"items" : [ ]
+							},
+							"createEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"createTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"editEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"editTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"uid" : {
+								"__type" : "uid",
+								"uidString" : "DoTjkyNfM0+4vMuD/8Z/ug=="
+							},
+							"paragraphStyle" : {
+								"__type" : "textStyle"
+							},
+							"string" : "References shows what one object points to: its class and superclass chain, and its slots (at most 24). In a window, select a block and press References. Here it is for a class; its Slots and Mermaid tabs work without Pele2svg:"
+						},
+						{
+							"__type" : "pharoSnippet",
+							"children" : {
+								"__type" : "snippets",
+								"items" : [ ]
+							},
+							"createEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"createTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"editEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"editTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"uid" : {
+								"__type" : "uid",
+								"uidString" : "9243NCWyV02h4argBHyfgg=="
+							},
+							"code" : "ImageMapReferences on: OrderedCollection"
+						},
+						{
+							"__type" : "textSnippet",
+							"children" : {
+								"__type" : "snippets",
+								"items" : [ ]
+							},
+							"createEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"createTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"editEmail" : {
+								"__type" : "email",
+								"emailString" : "<unknown>"
+							},
+							"editTime" : {
+								"__type" : "time",
+								"time" : {
+									"__type" : "dateAndTime",
+									"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+								}
+							},
+							"uid" : {
+								"__type" : "uid",
+								"uidString" : "NFvm497+V0ezFlKuV3uCRQ=="
+							},
+							"paragraphStyle" : {
+								"__type" : "textStyle"
+							},
+							"string" : "In a diff, the Class changes tab shows the classes whose bytes changed most as a horizontal bar chart, and Class changes (table) lists all of them. It needs a baseline; see the previous section."
+						}
+					]
+				},
+				"createEmail" : {
+					"__type" : "email",
+					"emailString" : "<unknown>"
+				},
+				"createTime" : {
+					"__type" : "time",
+					"time" : {
+						"__type" : "dateAndTime",
+						"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+					}
+				},
+				"editEmail" : {
+					"__type" : "email",
+					"emailString" : "<unknown>"
+				},
+				"editTime" : {
+					"__type" : "time",
+					"time" : {
+						"__type" : "dateAndTime",
+						"dateAndTimeString" : "2026-10-24T23:28:09.039+09:00"
+					}
+				},
+				"uid" : {
+					"__type" : "uid",
+					"uidString" : "O1GCLDLmIUeTXthKWeQmvw=="
+				},
+				"paragraphStyle" : {
+					"__type" : "textStyle"
+				},
+				"string" : "#### Diagrams (optional)"
 			},
 			{
 				"__type" : "textSnippet",

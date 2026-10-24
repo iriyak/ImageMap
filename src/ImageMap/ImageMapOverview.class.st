@@ -1,7 +1,7 @@
 "
 I am a picture of the whole heap. One pass over all objects, in the order SystemNavigation>>allObjectsDo: visits them, is cut into pages (ImageMapPage) of about 1 MiB of live objects. I draw one block per page, 16 per row, coloured by the kind that takes the most bytes in the page. My side panel shows the bytes per kind for the whole heap, a Classes button that opens my Classes view, the baseline buttons, and the details of the selected page, with Open window here to open an ImageMapViewer at the start of that page.
 
-`ImageMapOverview scan` collects garbage and then scans (a few seconds for about 8 million objects). `ImageMapOverview open` does that and opens me in the UI process. `scanPageBytes:` uses another page size, but only 1 MiB has been tried in the views. I also keep the bytes and the object count per class (`classStats`), which ImageMapDiff needs.
+`ImageMapOverview scan` collects garbage and then scans (a few seconds for about 8 million objects). `ImageMapOverview open` does that and opens me in the UI process. `scanPageBytes:` uses another page size, but only 1 MiB (`defaultPageBytes`) has been tried in the views. I also keep the bytes and the object count per class (`classStats`), which ImageMapDiff needs.
 
 Set as baseline keeps me as the baseline for ImageMapDiff, and Compare with now opens the diff.
 
@@ -29,6 +29,12 @@ Class {
 	#tag : 'Overview'
 }
 
+{ #category : 'accessing' }
+ImageMapOverview class >> defaultPageBytes [
+	"The size of a page of the overview: 1 MiB of live objects, as a rule. It is a size that keeps the number of blocks readable on a heap of a few hundred MiB; only this size has been tried in the views."
+	^ 1024 * 1024
+]
+
 { #category : 'opening' }
 ImageMapOverview class >> open [
 	"Scan, then open the inspector in the UI process (safe to call from any process)."
@@ -40,7 +46,7 @@ ImageMapOverview class >> open [
 
 { #category : 'instance creation' }
 ImageMapOverview class >> scan [
-	^ self scanPageBytes: 1048576
+	^ self scanPageBytes: self defaultPageBytes
 ]
 
 { #category : 'instance creation' }

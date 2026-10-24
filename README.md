@@ -12,13 +12,13 @@ Every block is one object (or one page of objects), and its colour is the kind o
 
 ## What you get
 
-**Window** (`ImageMapViewer`). 1024 consecutive objects, 16 per row, in the order `SystemNavigation>>allObjectsDo:` visits them. The label at the start of each row is the running byte offset. Hover a block to see its object, click to select it, and press *Inspect* to open the object in an inspector. *Prev*, *Next*, a start-index field and a position bar move the window.
+**Window** (`ImageMapViewer`). 1024 consecutive objects, 16 per row, in the order `SystemNavigation>>allObjectsDo:` visits them. The label at the start of each row is the running byte offset. Hover a block to see its object, click to select it, and press *Inspect* to open the object in an inspector. *Prev*, *Next*, a start-index field and a position bar move the window. The *Classes* and *References* buttons in the side panel open diagrams (see Diagrams below).
 
 **Overview** (`ImageMapOverview`). The whole heap in one picture. One block is one page of 1 MiB of live objects, coloured by the kind that takes the most bytes. The side panel shows the bytes per kind for the whole heap and the details of the selected page, a *Classes* button opens the *Classes* tab, and *Open window here* opens a window at the start of that page.
 
 **Diff** (`ImageMapDiff`, experimental). Compares the heap now with a baseline taken earlier, page by page. Filled blocks grew, outlined blocks shrank, and the colour is the kind that changed most. The side panel lists the change by kind and the biggest class changes.
 
-**Diagrams** (need [Pele2svg](https://github.com/iriyak/pele2svg), see Requirements). These tabs draw a Mermaid diagram next to a table or the Mermaid source:
+**Diagrams** (need [Pele2svg](https://github.com/iriyak/pele2svg), see Requirements). These tabs draw a Mermaid diagram next to a table or the Mermaid source: The nodes of the sankey diagrams have the colour of their kind, the same as in the legend and in *Bytes by kind*.
 
 - *Classes* (in an `ImageMapOverview`): the bytes of the heap as a sankey diagram: the whole heap, its kinds, and the classes that take at least 1% of it. *Classes (Mermaid)* is its source.
 - *Classes* (in a window, an `ImageMapSnapshot`; the *Classes* button in the side panel of the window opens it): the same sankey for the objects of the window, with the 14 classes that have most bytes named, in KiB.
