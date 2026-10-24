@@ -1,5 +1,5 @@
 "
-I am the interactive window shown in the Map tab of an ImageMapSnapshot. I have a toolbar (Prev, Next, a start-index field with Go, and a position bar that moves the window over the whole heap), a legend, the block map, and a side panel. The side panel shows the number of objects per kind in the window and the details of the selected block (class, kind, index, offset, size) with Inspect and References buttons. Inspect opens the object in an inspector, and References opens an ImageMapReferences: the class chain and the slots of the object as a diagram.
+I am the interactive window shown in the Map tab of an ImageMapSnapshot. I have a toolbar (Prev, Next, a start-index field with Go, and a position bar that moves the window over the whole heap), a legend, the block map, and a side panel. The side panel shows the number of objects per kind in the window, a Classes button that opens the Classes view of the snapshot (bytes by kind and class as a diagram; I also have the same Classes and Classes (Mermaid) views myself), and the details of the selected block (class, kind, index, offset, size) with Inspect and References buttons. Inspect opens the object in an inspector, and References opens an ImageMapReferences: the class chain and the slots of the object as a diagram.
 
 Open me with `ImageMapViewer openAt: 5000000`. The window is opened in the UI process, so this can be called from any process. `ImageMapViewer on: aSnapshot` builds me for a snapshot you already have. `goto:` moves the window: it keeps the start inside the heap and counts the objects again if the heap has shrunk.
 "
@@ -98,6 +98,24 @@ ImageMapViewer >> gotoFromEditor [
 ]
 
 { #category : 'views' }
+ImageMapViewer >> gtClassesFor: aView [
+	<gtView>
+	^ aView explicit
+		title: 'Classes';
+		priority: 2;
+		stencil: [ImageMapMermaid classesElementForSnapshot: snapshot]
+]
+
+{ #category : 'views' }
+ImageMapViewer >> gtClassesSourceFor: aView [
+	<gtView>
+	^ aView textEditor
+		title: 'Classes (Mermaid)';
+		priority: 3;
+		text: [ImageMapMermaid classesSourceForSnapshot: snapshot]
+]
+
+{ #category : 'views' }
 ImageMapViewer >> gtMapFor: aView [
 	<gtView>
 	^ aView explicit
@@ -193,9 +211,16 @@ ImageMapViewer >> refreshDetail [
 
 { #category : 'ui' }
 ImageMapViewer >> refreshSide [
+	| classesBtn |
 	sidePanel removeChildren.
 	sidePanel addChild: (self heading: 'Kinds in this window').
 	snapshot kindCounts do: [:a | sidePanel addChild: (self kindRow: a key count: a value)].
+	classesBtn := BrButton new
+		aptitude: BrGlamorousButtonWithLabelAptitude new;
+		label: 'Classes';
+		margin: (BlInsets top: 8 left: 0 bottom: 0 right: 0).
+	classesBtn action: [classesBtn phlow spawnObject: snapshot viewName: 'Classes'].
+	sidePanel addChild: classesBtn.
 	sidePanel addChild: (self heading: 'Selected').
 	detailBox := BlElement new
 		layout: BlLinearLayout vertical;

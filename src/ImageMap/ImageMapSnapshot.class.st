@@ -4,6 +4,7 @@ I am a window of consecutive objects, in the order SystemNavigation>>allObjectsD
 `mapElement` draws me as a 16-column block map; click a block to inspect its object. My Map view in the inspector is an ImageMapViewer. Building me walks the heap from the beginning, so it takes about a second when start is around 5,000,000.
 
 Indexes and offsets change when the garbage collector runs, so I am a picture of one moment.
+My Classes view draws the bytes of my objects by kind and class as a sankey diagram (the 14 classes with most bytes are named), and Classes (Mermaid) shows its source. `classStats` has the numbers in the same shape as ImageMapOverview>>classStats. The diagram needs Pele2svg.
 "
 Class {
 	#name : 'ImageMapSnapshot',
@@ -39,6 +40,20 @@ ImageMapSnapshot >> cells [
 	^ cells
 ]
 
+{ #category : 'analysis' }
+ImageMapSnapshot >> classStats [
+	"IdentityDictionary: class -> Array(kind index, bytes, objects) over the cells of this window (the same shape as ImageMapOverview>>classStats)."
+	| kinds stats |
+	kinds := ImageMapCell kinds.
+	stats := IdentityDictionary new.
+	cells do: [:cell | | c e |
+		c := [cell object class] on: Error do: [Object].
+		e := stats at: c ifAbsentPut: [Array with: (kinds indexOf: cell kind) with: 0 with: 0].
+		e at: 2 put: (e at: 2) + cell bytes.
+		e at: 3 put: (e at: 3) + 1].
+	^ stats
+]
+
 { #category : 'accessing' }
 ImageMapSnapshot >> columns [
 	^ columns ifNil: [16]
@@ -57,6 +72,24 @@ ImageMapSnapshot >> endIndex [
 { #category : 'accessing' }
 ImageMapSnapshot >> endOffset [
 	^ cells isEmpty ifTrue: [0] ifFalse: [cells last offset + cells last bytes]
+]
+
+{ #category : 'views' }
+ImageMapSnapshot >> gtClassesFor: aView [
+	<gtView>
+	^ aView explicit
+		title: 'Classes';
+		priority: 2;
+		stencil: [ImageMapMermaid classesElementForSnapshot: self]
+]
+
+{ #category : 'views' }
+ImageMapSnapshot >> gtClassesSourceFor: aView [
+	<gtView>
+	^ aView textEditor
+		title: 'Classes (Mermaid)';
+		priority: 3;
+		text: [ImageMapMermaid classesSourceForSnapshot: self]
 ]
 
 { #category : 'views' }
@@ -174,4 +207,10 @@ ImageMapSnapshot >> start [
 { #category : 'accessing' }
 ImageMapSnapshot >> startOffset [
 	^ cells isEmpty ifTrue: [0] ifFalse: [cells first offset]
+]
+
+{ #category : 'analysis' }
+ImageMapSnapshot >> totalBytes [
+	"The bytes of the objects in this window."
+	^ cells inject: 0 into: [:sum :cell | sum + cell bytes]
 ]

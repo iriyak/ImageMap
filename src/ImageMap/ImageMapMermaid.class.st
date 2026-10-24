@@ -64,37 +64,31 @@ ImageMapMermaid class >> classesElementFor: anOverview [
 	^ self elementForSource: (self classesSourceFor: anOverview)
 ]
 
+{ #category : 'ui' }
+ImageMapMermaid class >> classesElementForSnapshot: aSnapshot [
+	"The diagram with a line above it that says which window it is."
+	| box |
+	aSnapshot cells isEmpty ifTrue: [^ (self messageElement: 'The window is empty.') asScrollableElement].
+	box := BlElement new
+		layout: BlLinearLayout vertical;
+		constraintsDo: [:x | x horizontal fitContent. x vertical fitContent].
+	box addChild: (self messageElement: 'Bytes by kind and class in '
+		, aSnapshot cells size printString, ' objects, #', aSnapshot start printString, '..#', aSnapshot endIndex printString
+		, ' (the 14 classes with most bytes are named)').
+	box addChild: (self plainElementForSource: (self classesSourceForSnapshot: aSnapshot)).
+	^ box asScrollableElement
+]
+
 { #category : 'sources' }
 ImageMapMermaid class >> classesSourceFor: anOverview [
-	"A sankey diagram: the whole heap, then its kinds, then the classes that take at least 1% of the heap. What is left of a kind goes to 'other <kind>' when it is at least 0.1% of the heap, and to 'small remainders' otherwise. The height of the diagram follows the number of nodes in the last column; without it Mermaid draws every node one pixel high."
-	| kinds total stats kindBytes rest named out |
-	kinds := ImageMapCell kinds.
-	total := anOverview totalBytes max: 1.
-	stats := anOverview classStats.
-	kindBytes := Array new: kinds size withAll: 0.
-	rest := Array new: kinds size withAll: 0.
-	named := OrderedCollection new.
-	stats keysAndValuesDo: [:aClass :v |
-		kindBytes at: v first put: (kindBytes at: v first) + (v at: 2).
-		(v at: 2) * 100 >= total
-			ifTrue: [named add: aClass -> v]
-			ifFalse: [rest at: v first put: (rest at: v first) + (v at: 2)]].
-	named := named asSortedCollection: [:a :b | (a value at: 2) >= (b value at: 2)].
-	out := WriteStream on: String new.
-	out nextPutAll: '%%{init: {"sankey": {"width": 900, "suffix": " MiB", "height": ';
-		print: ((named size + kinds size) * 28 max: 420);
-		nextPutAll: '}}}%%'; lf.
-	out nextPutAll: 'sankey-beta'; lf; lf.
-	kinds doWithIndex: [:k :i |
-		self line: 'Whole heap' to: k bytes: (kindBytes at: i) on: out].
-	named do: [:a |
-		self line: (kinds at: a value first) to: a key name bytes: (a value at: 2) on: out].
-	kinds doWithIndex: [:k :i | | r |
-		r := rest at: i.
-		self line: k
-			to: (r * 1000 >= total ifTrue: ['other ', k] ifFalse: ['small remainders'])
-			bytes: r on: out].
-	^ out contents
+	"The sankey of the whole heap: the classes that take at least 1% of it are named."
+	^ self sankeyStats: anOverview classStats total: anOverview totalBytes root: 'Whole heap' minShare: 1/100 maxClasses: nil
+]
+
+{ #category : 'sources' }
+ImageMapMermaid class >> classesSourceForSnapshot: aSnapshot [
+	"The sankey of the objects in a window: the 14 classes with most bytes are named."
+	^ self sankeyStats: aSnapshot classStats total: aSnapshot totalBytes root: 'This window' minShare: 0 maxClasses: 14
 ]
 
 { #category : 'ui' }
@@ -117,12 +111,18 @@ ImageMapMermaid class >> kindClassDefsOn: aStream [
 ]
 
 { #category : 'private' }
-ImageMapMermaid class >> line: aSource to: aTarget bytes: n on: aStream [
-	"One row of a sankey diagram: source,target,value in MiB. Rows that round to zero are left out."
+ImageMapMermaid class >> line: aSource to: aTarget bytes: n divisor: aDivisor on: aStream [
+	"One row of a sankey diagram: source,target,value, with the bytes divided by aDivisor (1048576 for MiB, 1024 for KiB). Rows that round to zero are left out."
 	| v |
-	v := (n / 1048576.0) printShowingDecimalPlaces: 2.
+	v := (n / aDivisor asFloat) printShowingDecimalPlaces: 2.
 	v = '0.00' ifTrue: [^ self].
 	aStream nextPutAll: aSource; nextPut: $,; nextPutAll: aTarget; nextPut: $,; nextPutAll: v; lf
+]
+
+{ #category : 'private' }
+ImageMapMermaid class >> line: aSource to: aTarget bytes: n on: aStream [
+	"A row of a sankey diagram in MiB."
+	self line: aSource to: aTarget bytes: n divisor: 1048576 on: aStream
 ]
 
 { #category : 'ui' }
@@ -170,6 +170,43 @@ ImageMapMermaid class >> plainElementForSource: aMermaidString [
 		ifTrue: [[(Smalltalk at: #Pele2svg) new asElement: aMermaidString]
 			on: Error
 			do: [:e | self messageElement: 'The diagram could not be drawn: ', e messageText]]
+]
+
+{ #category : 'sources' }
+ImageMapMermaid class >> sankeyStats: stats total: aTotal root: aRootName minShare: aShare maxClasses: aCap [
+	"A sankey diagram of bytes: aRootName, then the kinds, then the classes. stats maps a class to #(kind index, bytes, objects), as ImageMapOverview>>classStats does. A class is named when it has at least aShare of aTotal bytes, and at most aCap classes are named (nil: no limit), the biggest first. What is left of a kind goes to 'other <kind>' when it is at least 0.1% of the total, and to 'small remainders' otherwise. The unit is MiB, or KiB when the total is under 4 MiB. The height of the diagram follows the number of nodes in the last column; without it Mermaid draws every node one pixel high."
+	| kinds total kindBytes rest named out divisor |
+	kinds := ImageMapCell kinds.
+	total := aTotal max: 1.
+	divisor := total < (4 * 1048576) ifTrue: [1024] ifFalse: [1048576].
+	kindBytes := Array new: kinds size withAll: 0.
+	rest := Array new: kinds size withAll: 0.
+	named := OrderedCollection new.
+	stats keysAndValuesDo: [:aClass :v |
+		kindBytes at: v first put: (kindBytes at: v first) + (v at: 2).
+		(v at: 2) >= (aShare * total)
+			ifTrue: [named add: aClass -> v]
+			ifFalse: [rest at: v first put: (rest at: v first) + (v at: 2)]].
+	named := named asSortedCollection: [:a :b | (a value at: 2) >= (b value at: 2)].
+	(aCap notNil and: [named size > aCap]) ifTrue: [
+		(named copyFrom: aCap + 1 to: named size) do: [:a |
+			rest at: a value first put: (rest at: a value first) + (a value at: 2)].
+		named := (named copyFrom: 1 to: aCap) asOrderedCollection].
+	out := WriteStream on: String new.
+	out nextPutAll: '%%{init: {"sankey": {"width": 900, "suffix": " ', (divisor = 1024 ifTrue: ['KiB'] ifFalse: ['MiB']), '", "height": ';
+		print: ((named size + kinds size) * 28 max: 420);
+		nextPutAll: '}}}%%'; lf.
+	out nextPutAll: 'sankey-beta'; lf; lf.
+	kinds doWithIndex: [:k :i |
+		self line: aRootName to: k bytes: (kindBytes at: i) divisor: divisor on: out].
+	named do: [:a |
+		self line: (kinds at: a value first) to: a key name bytes: (a value at: 2) divisor: divisor on: out].
+	kinds doWithIndex: [:k :i | | r |
+		r := rest at: i.
+		self line: k
+			to: (r * 1000 >= total ifTrue: ['other ', k] ifFalse: ['small remainders'])
+			bytes: r divisor: divisor on: out].
+	^ out contents
 ]
 
 { #category : 'sources' }

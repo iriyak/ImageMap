@@ -1,5 +1,5 @@
 "
-I am a picture of the whole heap. One pass over all objects, in the order SystemNavigation>>allObjectsDo: visits them, is cut into pages (ImageMapPage) of about 1 MiB of live objects. I draw one block per page, 16 per row, coloured by the kind that takes the most bytes in the page. My side panel shows the bytes per kind for the whole heap, the baseline buttons, and the details of the selected page, with Open window here to open an ImageMapViewer at the start of that page.
+I am a picture of the whole heap. One pass over all objects, in the order SystemNavigation>>allObjectsDo: visits them, is cut into pages (ImageMapPage) of about 1 MiB of live objects. I draw one block per page, 16 per row, coloured by the kind that takes the most bytes in the page. My side panel shows the bytes per kind for the whole heap, a Classes button that opens my Classes view, the baseline buttons, and the details of the selected page, with Open window here to open an ImageMapViewer at the start of that page.
 
 `ImageMapOverview scan` collects garbage and then scans (a few seconds for about 8 million objects). `ImageMapOverview open` does that and opens me in the UI process. `scanPageBytes:` uses another page size, but only 1 MiB has been tried in the views. I also keep the bytes and the object count per class (`classStats`), which ImageMapDiff needs.
 
@@ -413,7 +413,7 @@ ImageMapOverview >> select: aPage element: anElement [
 
 { #category : 'ui' }
 ImageMapOverview >> sideElement [
-	| side |
+	| side classesBtn |
 	side := BlElement new
 		layout: BlLinearLayout vertical;
 		padding: (BlInsets all: 8);
@@ -425,6 +425,12 @@ ImageMapOverview >> sideElement [
 	side addChild: self baselineSection.
 	side addChild: (self heading: 'Bytes by kind').
 	self kindTotals do: [:a | a value > 0 ifTrue: [side addChild: (self kindBytesRow: a key bytes: a value)]].
+	classesBtn := BrButton new
+		aptitude: BrGlamorousButtonWithLabelAptitude new;
+		label: 'Classes';
+		margin: (BlInsets top: 8 left: 0 bottom: 0 right: 0).
+	classesBtn action: [classesBtn phlow spawnObject: self viewName: 'Classes'].
+	side addChild: classesBtn.
 	side addChild: (self heading: 'Selected block').
 	detailBox := BlElement new
 		layout: BlLinearLayout vertical;
