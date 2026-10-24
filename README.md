@@ -4,7 +4,7 @@ A block-map view of the inside of a running Pharo image, for [Glamorous Toolkit]
 
 Every block is one object (or one page of objects), and its colour is the kind of object it is: classes, compiled methods, symbols, strings, arrays, method dictionaries, and so on. Walking the image this way makes its structure visible: where the class and method data sit, what the heap is made of, and what a change to the image added or released.
 
-> **Status: experimental.** ImageMap is a study of the object memory of a Pharo image, and it is at an early stage. The code was written together with Claude (Anthropic's AI assistant), and I am still reading it slowly to understand both the code and what it shows. Parts of it may be wrong or may not behave as I describe, and the numbers should not be taken as exact. The API and the look of the views may change without notice. Please read it as a work in progress and not as a finished tool. Corrections and comments are welcome: [issues](https://github.com/iriyak/ImageMap/issues).
+> **Status: experimental.** ImageMap is a study of the object memory of a Pharo image, and it is at an early stage. The code was written together with Claude (Anthropic's AI assistant), and I am reading it at my own pace to understand both the code and what it shows. Parts of it may be wrong or may not behave as I describe, and the numbers should not be taken as exact. The API and the look of the views may change without notice. Please read it as a work in progress and not as a finished tool. Corrections and comments are welcome: [issues](https://github.com/iriyak/ImageMap/issues).
 
 ![The overview of the whole heap (left) and a window of 1024 objects opened from one of its blocks (right)](docs/Screenshot1.png)
 
