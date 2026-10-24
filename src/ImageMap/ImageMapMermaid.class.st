@@ -112,11 +112,11 @@ ImageMapMermaid class >> kindClassDefsOn: aStream [
 
 { #category : 'private' }
 ImageMapMermaid class >> line: aSource to: aTarget bytes: n divisor: aDivisor on: aStream [
-	"One row of a sankey diagram: source,target,value, with the bytes divided by aDivisor (1048576 for MiB, 1024 for KiB). Rows that round to zero are left out."
-	| v |
-	v := (n / aDivisor asFloat) printShowingDecimalPlaces: 2.
-	v = '0.00' ifTrue: [^ self].
-	aStream nextPutAll: aSource; nextPut: $,; nextPutAll: aTarget; nextPut: $,; nextPutAll: v; lf
+	"One row of a sankey diagram: source,target,value, with the bytes divided by aDivisor (1048576 for MiB, 1024 for KiB). The value keeps four decimals, because Pele2svg rounds the labels itself and a value rounded here would add up: two rows of 0.19 and 0.12 under a node of 0.30 make it 0.31. Rows that would be shown as 0 are left out."
+	| x |
+	x := n / aDivisor asFloat.
+	(x printShowingDecimalPlaces: 2) = '0.00' ifTrue: [^ self].
+	aStream nextPutAll: aSource; nextPut: $,; nextPutAll: aTarget; nextPut: $,; nextPutAll: (x printShowingDecimalPlaces: 4); lf
 ]
 
 { #category : 'private' }
@@ -159,12 +159,11 @@ ImageMapMermaid class >> neighboursSourceFor: anOverview [
 
 { #category : 'private' }
 ImageMapMermaid class >> nodeColorsRoot: aRootName named: named [
-	"The nodeColors of the sankey, as JSON members. Every kind, the classes that are named and the 'other <kind>' nodes take the colour of their kind (ImageMapCell colorFor:), so the diagram agrees with the legend and with Bytes by kind. The root and the small remainders are grey."
+	"The nodeColors of the sankey, as JSON members. Every kind, the classes that are named and the 'other <kind>' nodes take the colour of their kind (ImageMapCell colorFor:), so the diagram agrees with the legend and with Bytes by kind. The root is grey."
 	| pairs kinds |
 	kinds := ImageMapCell kinds.
 	pairs := OrderedCollection new.
 	pairs add: aRootName -> '9AA5B1'.
-	pairs add: 'small remainders' -> 'CCCCCC'.
 	kinds do: [:k | | hex |
 		hex := (ImageMapCell colorFor: k) asHexString.
 		pairs add: k -> hex.
@@ -193,8 +192,8 @@ ImageMapMermaid class >> plainElementForSource: aMermaidString [
 
 { #category : 'sources' }
 ImageMapMermaid class >> sankeyStats: stats total: aTotal root: aRootName minShare: aShare maxClasses: aCap [
-	"A sankey diagram of bytes: aRootName, then the kinds, then the classes. stats maps a class to #(kind index, bytes, objects), as ImageMapOverview>>classStats does. A class is named when it has at least aShare of aTotal bytes, and at most aCap classes are named (nil: no limit), the biggest first. What is left of a kind goes to 'other <kind>' when it is at least 0.1% of the total, and to 'small remainders' otherwise. The nodes take the colour of their kind (nodeColorsRoot:named:). The unit is MiB, or KiB when the total is under 4 MiB. The height of the diagram follows the number of nodes in the last column; without it Mermaid draws every node one pixel high."
-	| kinds total kindBytes rest named out divisor |
+	"A sankey diagram of bytes: aRootName, then the kinds, then the classes. stats maps a class to #(kind index, bytes, objects), as ImageMapOverview>>classStats does. A class is named when it has at least aShare of aTotal bytes, and at most aCap classes are named (nil: no limit), the biggest first. What is left of a kind goes to 'other <kind>' when it is at least 0.1% of the total, and is left out otherwise (less than 0.1% cannot be seen; a node shared by all the kinds would pull the kinds that use it together, and spoil the order). A kind with no named class always gets its 'other <kind>' node, because pele puts a node without outgoing flows into the last column. The nodes take the colour of their kind (nodeColorsRoot:named:). The rows come in the order of the bytes: the kinds, biggest first, and inside each kind its classes, biggest first and 'other <kind>' last; pele lays the nodes out in the order of the rows. The unit is MiB, or KiB when the total is under 4 MiB. The height of the diagram follows the number of nodes in the last column; without it Mermaid draws every node one pixel high."
+	| kinds total kindBytes rest named out divisor kindOrder |
 	kinds := ImageMapCell kinds.
 	total := aTotal max: 1.
 	divisor := total < (4 * 1048576) ifTrue: [1024] ifFalse: [1048576].
@@ -218,15 +217,16 @@ ImageMapMermaid class >> sankeyStats: stats total: aTotal root: aRootName minSha
 		nextPutAll: (self nodeColorsRoot: aRootName named: named);
 		nextPutAll: '}}}}%%'; lf.
 	out nextPutAll: 'sankey-beta'; lf; lf.
-	kinds doWithIndex: [:k :i |
-		self line: aRootName to: k bytes: (kindBytes at: i) divisor: divisor on: out].
-	named do: [:a |
-		self line: (kinds at: a value first) to: a key name bytes: (a value at: 2) divisor: divisor on: out].
-	kinds doWithIndex: [:k :i | | r |
+	kindOrder := (1 to: kinds size) asSortedCollection: [:a :b | (kindBytes at: a) >= (kindBytes at: b)].
+	kindOrder do: [:i | self line: aRootName to: (kinds at: i) bytes: (kindBytes at: i) divisor: divisor on: out].
+	kindOrder do: [:i | | k r mine |
+		k := kinds at: i.
+		mine := named select: [:a | a value first = i].
+		mine do: [:a |
+			self line: k to: a key name bytes: (a value at: 2) divisor: divisor on: out].
 		r := rest at: i.
-		self line: k
-			to: (r * 1000 >= total ifTrue: ['other ', k] ifFalse: ['small remainders'])
-			bytes: r divisor: divisor on: out].
+		(r * 1000 >= total or: [mine isEmpty])
+			ifTrue: [self line: k to: 'other ', k bytes: r divisor: divisor on: out]].
 	^ out contents
 ]
 

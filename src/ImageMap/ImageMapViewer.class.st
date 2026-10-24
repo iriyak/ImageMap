@@ -1,5 +1,5 @@
 "
-I am the interactive window shown in the Map tab of an ImageMapSnapshot. I have a toolbar (Prev, Next, a start-index field with Go, and a position bar that moves the window over the whole heap), a legend, the block map, and a side panel. The side panel shows the number of objects per kind in the window, a Classes button that opens the Classes view of the snapshot (bytes by kind and class as a diagram; I also have the same Classes and Classes (Mermaid) views myself), and the details of the selected block (class, kind, index, offset, size) with Inspect and References buttons. Inspect opens the object in an inspector, and References opens an ImageMapReferences: the class chain and the slots of the object as a diagram.
+I am the interactive window shown in the Map tab of an ImageMapSnapshot. I have a toolbar (Prev, Next, a start-index field with Go, and a position bar that moves the window over the whole heap), a legend, the block map, and a side panel. The side panel shows the bytes per kind in the window (with the share and the number of objects), as ImageMapOverview does for the whole heap, a Classes button that opens the Classes view of the snapshot (bytes by kind and class as a diagram; I also have the same Classes and Classes (Mermaid) views myself, and they follow the window when it moves), and the details of the selected block (class, kind, index, offset, size) with Inspect and References buttons. Inspect opens the object in an inspector, and References opens an ImageMapReferences: the class chain and the slots of the object as a diagram.
 
 Open me with `ImageMapViewer openAt: 5000000`. The window is opened in the UI process, so this can be called from any process. `ImageMapViewer on: aSnapshot` builds me for a snapshot you already have. `goto:` moves the window: it keeps the start inside the heap and counts the objects again if the heap has shrunk.
 "
@@ -19,7 +19,8 @@ Class {
 		'thumb',
 		'infoLabel',
 		'selectedElement',
-		'selectedCell'
+		'selectedCell',
+		'followers'
 	],
 	#category : 'ImageMap-Window',
 	#package : 'ImageMap',
@@ -76,6 +77,32 @@ ImageMapViewer >> element [
 	^ self buildRoot
 ]
 
+{ #category : 'private' }
+ImageMapViewer >> fillFollower: aHolder [
+	| content |
+	content := (aHolder userData at: #build) value.
+	content constraintsDo: [:c | c horizontal matchParent. c vertical matchParent].
+	aHolder removeChildren.
+	aHolder addChild: content.
+	aHolder userData at: #stale put: false
+]
+
+{ #category : 'private' }
+ImageMapViewer >> followingElementFrom: aBlock [
+	"An element for a tab of the inspector that shows the window of this viewer, and follows it. aBlock builds the content from the current snapshot. The content is built now, rebuilt when the window moves while the tab is on screen, and marked stale when the window moves while it is not: it is then rebuilt when the tab comes back. Drawing a diagram starts a process, so nothing is drawn for a tab that nobody looks at."
+	| holder |
+	holder := BlElement new
+		layout: BlFrameLayout new;
+		constraintsDo: [:c | c horizontal matchParent. c vertical matchParent].
+	holder userData at: #build put: aBlock.
+	self fillFollower: holder.
+	holder when: BlElementAddedToSceneGraphEvent do: [:e |
+		(holder userData at: #stale ifAbsent: [false]) ifTrue: [self fillFollower: holder]].
+	followers ifNil: [followers := WeakSet new].
+	followers add: holder.
+	^ holder
+]
+
 { #category : 'navigation' }
 ImageMapViewer >> goto: aStart [
 	"Move the window. The total object count can shrink after a GC, so when the window comes back short, recount and clamp again."
@@ -103,16 +130,21 @@ ImageMapViewer >> gtClassesFor: aView [
 	^ aView explicit
 		title: 'Classes';
 		priority: 2;
-		stencil: [ImageMapMermaid classesElementForSnapshot: snapshot]
+		stencil: [self followingElementFrom: [ImageMapMermaid classesElementForSnapshot: snapshot]]
 ]
 
 { #category : 'views' }
 ImageMapViewer >> gtClassesSourceFor: aView [
 	<gtView>
-	^ aView textEditor
+	^ aView explicit
 		title: 'Classes (Mermaid)';
 		priority: 3;
-		text: [ImageMapMermaid classesSourceForSnapshot: snapshot]
+		stencil: [self followingElementFrom: [
+			BrEditor new
+				aptitude: BrGlamorousRegularEditorAptitude new;
+				text: (ImageMapMermaid classesSourceForSnapshot: snapshot);
+				beReadOnlyWithSelection;
+				yourself]]
 ]
 
 { #category : 'views' }
@@ -134,7 +166,13 @@ ImageMapViewer >> heading: aString [
 ]
 
 { #category : 'ui' }
-ImageMapViewer >> kindRow: aKind count: anInteger [
+ImageMapViewer >> kibibytes: bytes [
+	^ (ImageMapCell roundedText: bytes / 1024.0), ' KiB'
+]
+
+{ #category : 'ui' }
+ImageMapViewer >> kindRow: aKind stat: aPair [
+	"aPair is (Array bytes objects), as ImageMapSnapshot>>kindStats answers."
 	| row sq |
 	row := BlElement new
 		layout: BlLinearLayout horizontal;
@@ -145,7 +183,7 @@ ImageMapViewer >> kindRow: aKind count: anInteger [
 		geometry: (BlRoundedRectangleGeometry cornerRadius: 2);
 		margin: (BlInsets top: 4 left: 0 bottom: 0 right: 6).
 	row addChild: sq.
-	row addChild: (self line: aKind asString, '  ', anInteger printString, '  (', (anInteger * 100 // (snapshot count max: 1)) printString, '%)').
+	row addChild: (self line: aKind asString, '  ', (self kibibytes: aPair first), '  (', (aPair first * 100 / (snapshot totalBytes max: 1)) rounded printString, '%)  ', aPair last asStringWithCommas, (aPair last = 1 ifTrue: [' object'] ifFalse: [' objects'])).
 	^ row
 ]
 
@@ -169,7 +207,8 @@ ImageMapViewer >> refresh [
 	scroll constraintsDo: [:c | c horizontal matchParent. c vertical matchParent].
 	mapHolder addChild: scroll.
 	self refreshSide.
-	self refreshControls
+	self refreshControls.
+	self refreshFollowers
 ]
 
 { #category : 'ui' }
@@ -209,12 +248,22 @@ ImageMapViewer >> refreshDetail [
 	detailBox addChild: row
 ]
 
+{ #category : 'private' }
+ImageMapViewer >> refreshFollowers [
+	"The window has moved: update the tabs that follow it."
+	followers ifNil: [^ self].
+	followers copy do: [:h |
+		h isAttachedToSceneGraph
+			ifTrue: [self fillFollower: h]
+			ifFalse: [h userData at: #stale put: true]]
+]
+
 { #category : 'ui' }
 ImageMapViewer >> refreshSide [
 	| classesBtn |
 	sidePanel removeChildren.
-	sidePanel addChild: (self heading: 'Kinds in this window').
-	snapshot kindCounts do: [:a | sidePanel addChild: (self kindRow: a key count: a value)].
+	sidePanel addChild: (self heading: 'Bytes by kind').
+	snapshot kindStats do: [:a | sidePanel addChild: (self kindRow: a key stat: a value)].
 	classesBtn := BrButton new
 		aptitude: BrGlamorousButtonWithLabelAptitude new;
 		label: 'Classes';

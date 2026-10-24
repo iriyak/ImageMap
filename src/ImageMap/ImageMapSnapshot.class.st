@@ -103,9 +103,16 @@ ImageMapSnapshot >> gtMapFor: aView [
 ]
 
 { #category : 'analysis' }
-ImageMapSnapshot >> kindCounts [
-	"Answer an Array of kind -> count, most frequent first."
-	^ (cells collect: #kind) asBag sortedCounts collect: [:a | a value -> a key]
+ImageMapSnapshot >> kindStats [
+	"Answer an Array of kind -> (Array bytes objects) for this window, the kinds with most bytes first. A kind with no bytes is left out."
+	| sums |
+	sums := Dictionary new.
+	cells do: [:c | | e |
+		e := sums at: c kind ifAbsentPut: [Array with: 0 with: 0].
+		e at: 1 put: (e at: 1) + c bytes.
+		e at: 2 put: (e at: 2) + 1].
+	^ ((sums associations select: [:a | a value first > 0])
+		asSortedCollection: [:a :b | a value first > b value first or: [a value first = b value first and: [a key <= b key]]]) asArray
 ]
 
 { #category : 'ui' }

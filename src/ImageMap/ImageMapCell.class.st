@@ -87,6 +87,16 @@ ImageMapCell class >> resetColors [
 	Colors := nil
 ]
 
+{ #category : 'formatting' }
+ImageMapCell class >> roundedText: aNumber [
+	"aNumber with at most two decimals, rounded, without trailing zeros: 10.8, 5, 0.02. It is how the diagrams (Pele2svg) show a value, so the side panels use it too and the numbers agree."
+	| s |
+	s := aNumber asFloat printShowingDecimalPlaces: 2.
+	[s last = $0] whileTrue: [s := s allButLast].
+	s last = $. ifTrue: [s := s allButLast].
+	^ s
+]
+
 { #category : 'accessing' }
 ImageMapCell >> bytes [
 	^ bytes

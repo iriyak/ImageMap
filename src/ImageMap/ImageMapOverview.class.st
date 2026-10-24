@@ -243,7 +243,7 @@ ImageMapOverview >> kindBytesRow: aKind bytes: b [
 		geometry: (BlRoundedRectangleGeometry cornerRadius: 2);
 		margin: (BlInsets top: 4 left: 0 bottom: 0 right: 6).
 	row addChild: sq.
-	row addChild: (self line: aKind asString, '  ', (self mebibytes: b), '  (', (b * 100 // (totalBytes max: 1)) printString, '%)').
+	row addChild: (self line: aKind asString, '  ', (self mebibytes: b), '  (', (b * 100 / (totalBytes max: 1)) rounded printString, '%)').
 	^ row
 ]
 
@@ -314,7 +314,7 @@ ImageMapOverview >> mapElementOnSelect: aBlock [
 
 { #category : 'formatting' }
 ImageMapOverview >> mebibytes: bytes [
-	^ ((bytes * 10 // 1048576) / 10.0) printString, ' MiB'
+	^ (ImageMapCell roundedText: bytes / 1048576.0), ' MiB'
 ]
 
 { #category : 'accessing' }
