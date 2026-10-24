@@ -4,6 +4,7 @@ I am a picture of the whole heap. One pass over all objects, in the order System
 `ImageMapOverview scan` collects garbage and then scans (a few seconds for about 8 million objects). `ImageMapOverview open` does that and opens me in the UI process. `scanPageBytes:` uses another page size, but only 1 MiB has been tried in the views. I also keep the bytes and the object count per class (`classStats`), which ImageMapDiff needs.
 
 Set as baseline keeps me as the baseline for ImageMapDiff, and Compare with now opens the diff.
+My Classes view draws bytes per kind and per class as a sankey diagram, and Classes (Mermaid) shows its source. Both come from ImageMapMermaid and need Pele2svg for the drawing.
 "
 Class {
 	#name : 'ImageMapOverview',
@@ -106,6 +107,24 @@ ImageMapOverview >> element [
 	body addChild: mapHolder; addChild: self sideElement.
 	root addChild: body.
 	^ root
+]
+
+{ #category : 'views' }
+ImageMapOverview >> gtClassesFor: aView [
+	<gtView>
+	^ aView explicit
+		title: 'Classes';
+		priority: 2;
+		stencil: [ImageMapMermaid classesElementFor: self]
+]
+
+{ #category : 'views' }
+ImageMapOverview >> gtClassesSourceFor: aView [
+	<gtView>
+	^ aView textEditor
+		title: 'Classes (Mermaid)';
+		priority: 3;
+		text: [ImageMapMermaid classesSourceFor: self]
 ]
 
 { #category : 'views' }

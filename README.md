@@ -18,11 +18,17 @@ Every block is one object (or one page of objects), and its colour is the kind o
 
 **Diff** (`ImageMapDiff`, experimental). Compares the heap now with a baseline taken earlier, page by page. Filled blocks grew, outlined blocks shrank, and the colour is the kind that changed most. The side panel lists the change by kind and the biggest class changes.
 
+**Classes view** (the *Classes* tab of an `ImageMapOverview`). The bytes of the heap as a sankey diagram: the whole heap, its kinds, and the classes that take at least 1% of it. *Classes (Mermaid)* shows the source of the diagram. Needs [Pele2svg](https://github.com/iriyak/pele2svg), see Requirements.
+
+**References** (the *References* button in the side panel of a window). The selected object as a diagram: its class and superclass chain, and what its slots point to (at most 24 slots; the literals of a compiled method). Needs Pele2svg for the diagram; the *Slots* and *Mermaid* tabs do not.
+
 Kinds and colours: `class`, `method`, `symbol`, `string`, `array`, `methoddict`, `dictionary`, `association`, `ordered`, `object`, `bytes`, `words`, `weak`, `context`, `block`.
 
 ## Requirements
 
 Glamorous Toolkit (Bloc, Brick and Phlow). ImageMap was developed and tried on GT v1.1.624 (Pharo 13.1, 64-bit Spur, Windows). Other versions and platforms have not been tried.
+
+Optional: [Pele2svg](https://github.com/iriyak/pele2svg) (and Node.js 20 or newer, which it runs) draws the Mermaid diagrams of the Classes view and of References. Without it, those views say so and everything else works. Load it before you use them, as described in its README. Each diagram starts an external process and takes about half a second.
 
 ## Installation
 

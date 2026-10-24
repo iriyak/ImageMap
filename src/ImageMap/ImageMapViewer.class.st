@@ -1,5 +1,5 @@
 "
-I am the interactive window shown in the Map tab of an ImageMapSnapshot. I have a toolbar (Prev, Next, a start-index field with Go, and a position bar that moves the window over the whole heap), a legend, the block map, and a side panel. The side panel shows the number of objects per kind in the window and the details of the selected block (class, kind, index, offset, size) with an Inspect button.
+I am the interactive window shown in the Map tab of an ImageMapSnapshot. I have a toolbar (Prev, Next, a start-index field with Go, and a position bar that moves the window over the whole heap), a legend, the block map, and a side panel. The side panel shows the number of objects per kind in the window and the details of the selected block (class, kind, index, offset, size) with Inspect and References buttons. Inspect opens the object in an inspector, and References opens an ImageMapReferences: the class chain and the slots of the object as a diagram.
 
 Open me with `ImageMapViewer openAt: 5000000`. The window is opened in the UI process, so this can be called from any process. `ImageMapViewer on: aSnapshot` builds me for a snapshot you already have. `goto:` moves the window: it keeps the start inside the heap and counts the objects again if the heap has shrunk.
 "
@@ -164,7 +164,7 @@ ImageMapViewer >> refreshControls [
 
 { #category : 'ui' }
 ImageMapViewer >> refreshDetail [
-	| btn obj |
+	| btn refs row obj |
 	detailBox removeChildren.
 	selectedCell ifNil: [detailBox addChild: (self line: 'Click a block.'). ^ self].
 	obj := selectedCell object.
@@ -174,12 +174,21 @@ ImageMapViewer >> refreshDetail [
 	  'offset: +', (selectedCell offset printStringBase: 16).
 	  'size: ', selectedCell bytes printString, ' B' }
 		do: [:s | detailBox addChild: (self line: s)].
+	row := BlElement new
+		layout: BlLinearLayout horizontal;
+		constraintsDo: [:c | c horizontal matchParent. c vertical fitContent];
+		margin: (BlInsets top: 8 left: 0 bottom: 0 right: 0).
 	btn := BrButton new
 		aptitude: BrGlamorousButtonWithLabelAptitude new;
 		label: 'Inspect';
-		margin: (BlInsets top: 8 left: 0 bottom: 0 right: 0).
+		margin: (BlInsets right: 8).
 	btn action: [btn phlow spawnObject: obj].
-	detailBox addChild: btn
+	refs := BrButton new
+		aptitude: BrGlamorousButtonWithLabelAptitude new;
+		label: 'References'.
+	refs action: [refs phlow spawnObject: (ImageMapReferences on: obj)].
+	row addChild: btn; addChild: refs.
+	detailBox addChild: row
 ]
 
 { #category : 'ui' }
