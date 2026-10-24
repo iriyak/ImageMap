@@ -122,6 +122,6 @@ Three things about Mermaid that cost time. A sankey with many nodes needs its he
 
 - Pharo VM wiki, [Documentation](https://github.com/pharo-project/pharo-vm/wiki/Documentation), with the pages [How is Pharo memory structured when an image is open?](https://github.com/pharo-project/pharo-vm/wiki/How-is-Pharo-memory-structured-when-an-image-is-open-%3F) and [Garbage collector](https://github.com/pharo-project/pharo-vm/wiki/Garbage-collector)
 - Booklet draft: [Pharo Virtual Machine](https://github.com/SquareBracketAssociates/Booklet-PharoVirtualMachine)
-- Clément Béra, [articles on memory management](https://clementbera.wordpress.com/category/memory-management/), including the Spur object format
+- Clément Béra, [articles on memory management](https://clementbera.wordpress.com/category/memory-management/), including the Spur object format (as of writing, this link returns Not Found and cannot be reached)
 - Eliot Miranda, [Cog blog](http://www.mirandabanda.org/cogblog/)
 - The source of the memory manager: class `SpurMemoryManager` in the VM sources (`pharo-project/pharo-vm`)
