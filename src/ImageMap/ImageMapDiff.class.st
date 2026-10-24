@@ -24,11 +24,7 @@ Class {
 		'cells',
 		'classChanges',
 		'beforeKindBytes',
-		'afterKindBytes',
-		'detailBox',
-		'selectedElement',
-		'selectedCell',
-		'selectedBorder'
+		'afterKindBytes'
 	],
 	#classVars : [
 		'Baseline'
@@ -201,10 +197,8 @@ ImageMapDiff >> computeCells [
 
 { #category : 'ui' }
 ImageMapDiff >> element [
-	| root body mapHolder scroll |
-	selectedElement := nil.
-	selectedCell := nil.
-	selectedBorder := nil.
+	| root body mapHolder scroll selection |
+	selection := ImageMapSelection new.
 	root := BlElement new
 		layout: BlLinearLayout vertical;
 		constraintsDo: [:c | c horizontal matchParent. c vertical matchParent].
@@ -218,10 +212,10 @@ ImageMapDiff >> element [
 		constraintsDo: [:c | c horizontal matchParent. c vertical matchParent].
 	mapHolder := BlElement new
 		constraintsDo: [:c | c horizontal exact: 470. c vertical matchParent].
-	scroll := (self mapElementOnSelect: [:aCell :el | self select: aCell element: el]) asScrollableElement.
+	scroll := (self mapElementOnSelect: [:aCell :el | self select: aCell element: el in: selection]) asScrollableElement.
 	scroll constraintsDo: [:c | c horizontal matchParent. c vertical matchParent].
 	mapHolder addChild: scroll.
-	body addChild: mapHolder; addChild: self sideElement.
+	body addChild: mapHolder; addChild: (self sideElementFor: selection).
 	root addChild: body.
 	^ root
 ]
@@ -366,25 +360,25 @@ ImageMapDiff >> printOn: aStream [
 ]
 
 { #category : 'ui' }
-ImageMapDiff >> refreshDetail [
+ImageMapDiff >> refreshDetailIn: aSelection [
 	| btn c pg |
-	detailBox removeChildren.
-	selectedCell ifNil: [detailBox addChild: (self line: 'Click a block.'). ^ self].
-	c := selectedCell.
+	aSelection detailBox removeChildren.
+	aSelection item ifNil: [aSelection detailBox addChild: (self line: 'Click a block.'). ^ self].
+	c := aSelection item.
 	c isMerged ifTrue: [
-		detailBox addChild: (self line: 'baseline page ', c pageNumber printString).
-		detailBox addChild: (self line: 'its first object is gone;').
-		detailBox addChild: (self line: 'counted in page ', c mergedInto printString, '.').
+		aSelection detailBox addChild: (self line: 'baseline page ', c pageNumber printString).
+		aSelection detailBox addChild: (self line: 'its first object is gone;').
+		aSelection detailBox addChild: (self line: 'counted in page ', c mergedInto printString, '.').
 		^ self].
 	c isTail
-		ifTrue: [detailBox addChild: (self line: 'added after the last baseline page')]
+		ifTrue: [aSelection detailBox addChild: (self line: 'added after the last baseline page')]
 		ifFalse: [
 			pg := before pages at: c pageNumber.
-			detailBox addChild: (self line: 'baseline page ', c pageNumber printString, '  +', (pg offset printStringBase: 16)).
-			c groupSize > 1 ifTrue: [detailBox addChild: (self line: '(includes ', (c groupSize - 1) printString, ' following page(s) whose first object is gone)')].
-			detailBox addChild: (self line: 'objects in range now: ', c afterObjects printString)].
-	(c topChanges: 6) isEmpty ifTrue: [detailBox addChild: (self line: 'no change')].
-	(c topChanges: 6) do: [:a | detailBox addChild: (self line: '  ', a key asString, '  ', (self signedBytes: a value))].
+			aSelection detailBox addChild: (self line: 'baseline page ', c pageNumber printString, '  +', (pg offset printStringBase: 16)).
+			c groupSize > 1 ifTrue: [aSelection detailBox addChild: (self line: '(includes ', (c groupSize - 1) printString, ' following page(s) whose first object is gone)')].
+			aSelection detailBox addChild: (self line: 'objects in range now: ', c afterObjects printString)].
+	(c topChanges: 6) isEmpty ifTrue: [aSelection detailBox addChild: (self line: 'no change')].
+	(c topChanges: 6) do: [:a | aSelection detailBox addChild: (self line: '  ', a key asString, '  ', (self signedBytes: a value))].
 	(c isTail not and: [pg isAnchorAlive]) ifTrue: [
 		btn := BrButton new
 			aptitude: BrGlamorousButtonWithLabelAptitude new;
@@ -392,9 +386,9 @@ ImageMapDiff >> refreshDetail [
 			margin: (BlInsets top: 8 left: 0 bottom: 0 right: 0).
 		btn action: [ | w |
 			w := ImageMapSnapshot startingAt: pg firstObject count: 1024.
-			w ifNil: [detailBox addChild: (self line: 'That object no longer exists (GC).')]
+			w ifNil: [aSelection detailBox addChild: (self line: 'That object no longer exists (GC).')]
 				ifNotNil: [btn phlow spawnObject: (ImageMapViewer on: w) viewName: 'Map']].
-		detailBox addChild: btn]
+		aSelection detailBox addChild: btn]
 ]
 
 { #category : 'private' }
@@ -444,13 +438,11 @@ ImageMapDiff >> scanSlow: aBoolean [
 ]
 
 { #category : 'ui' }
-ImageMapDiff >> select: aCell element: anElement [
-	selectedElement ifNotNil: [:prev | prev border: selectedBorder].
-	selectedElement := anElement.
-	selectedBorder := anElement border.
-	selectedCell := aCell.
+ImageMapDiff >> select: aCell element: anElement in: aSelection [
+	aSelection element ifNotNil: [:prev | prev border: aSelection border].
+	aSelection element: anElement; border: anElement border; item: aCell.
 	anElement border: (BlBorder paint: Color white width: 2).
-	self refreshDetail
+	self refreshDetailIn: aSelection
 ]
 
 { #category : 'initialization' }
@@ -462,12 +454,12 @@ ImageMapDiff >> setBaseline: aBaseline [
 ]
 
 { #category : 'ui' }
-ImageMapDiff >> sideElement [
+ImageMapDiff >> sideElementFor: aSelection [
 	| side kindsSorted gainers losers |
 	side := BlElement new
 		layout: BlLinearLayout vertical;
 		padding: (BlInsets all: 8);
-		constraintsDo: [:c | c horizontal exact: 330. c vertical matchParent].
+		constraintsDo: [:c | c horizontal exact: 330. c vertical fitContent].
 	side addChild: (self heading: 'Heap change').
 	side addChild: (self line: 'objects: ', before total printString, ' -> ', afterTotal printString, '  (', ((afterTotal - before total) >= 0 ifTrue: ['+'] ifFalse: ['']), (afterTotal - before total) printString, ')').
 	side addChild: (self line: 'live size: ', (self plainBytes: before totalBytes), ' -> ', (self plainBytes: afterBytes), '  (', (self signedBytes: afterBytes - before totalBytes), ')').
@@ -483,12 +475,15 @@ ImageMapDiff >> sideElement [
 	losers := (classChanges last: (5 min: classChanges size)) reverse.
 	losers do: [:e | (e at: 2) < 0 ifTrue: [side addChild: (self classRow: e)]].
 	side addChild: (self heading: 'Selected block').
-	detailBox := BlElement new
+	aSelection detailBox: (BlElement new
 		layout: BlLinearLayout vertical;
-		constraintsDo: [:c | c horizontal matchParent. c vertical fitContent].
-	side addChild: detailBox.
-	self refreshDetail.
-	^ side
+		constraintsDo: [:c | c horizontal matchParent. c vertical fitContent];
+		yourself).
+	side addChild: aSelection detailBox.
+	self refreshDetailIn: aSelection.
+	^ side asScrollableElement
+		constraintsDo: [:c | c horizontal exact: 330. c vertical matchParent];
+		yourself
 ]
 
 { #category : 'formatting' }

@@ -65,8 +65,10 @@ ImageMapViewer >> buildRoot [
 	sidePanel := BlElement new
 		layout: BlLinearLayout vertical;
 		padding: (BlInsets all: 8);
-		constraintsDo: [:c | c horizontal exact: 280. c vertical matchParent].
-	body addChild: mapHolder; addChild: sidePanel.
+		constraintsDo: [:c | c horizontal exact: 280. c vertical fitContent].
+	body addChild: mapHolder; addChild: (sidePanel asScrollableElement
+		constraintsDo: [:c | c horizontal exact: 280. c vertical matchParent];
+		yourself).
 	root addChild: body.
 	self refresh.
 	^ root

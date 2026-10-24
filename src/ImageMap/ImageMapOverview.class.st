@@ -15,9 +15,6 @@ Class {
 		'pageBytes',
 		'total',
 		'totalBytes',
-		'detailBox',
-		'selectedElement',
-		'selectedPage',
 		'classStats',
 		'scannedAt',
 		'transitions',
@@ -133,9 +130,8 @@ ImageMapOverview >> classStats [
 
 { #category : 'ui' }
 ImageMapOverview >> element [
-	| root body mapHolder scroll |
-	selectedElement := nil.
-	selectedPage := nil.
+	| root body mapHolder scroll selection |
+	selection := ImageMapSelection new.
 	root := BlElement new
 		layout: BlLinearLayout vertical;
 		constraintsDo: [:c | c horizontal matchParent. c vertical matchParent].
@@ -147,10 +143,10 @@ ImageMapOverview >> element [
 		constraintsDo: [:c | c horizontal matchParent. c vertical matchParent].
 	mapHolder := BlElement new
 		constraintsDo: [:c | c horizontal exact: 470. c vertical matchParent].
-	scroll := (self mapElementOnSelect: [:aPage :el | self select: aPage element: el]) asScrollableElement.
+	scroll := (self mapElementOnSelect: [:aPage :el | self select: aPage element: el in: selection]) asScrollableElement.
 	scroll constraintsDo: [:c | c horizontal matchParent. c vertical matchParent].
 	mapHolder addChild: scroll.
-	body addChild: mapHolder; addChild: self sideElement.
+	body addChild: mapHolder; addChild: (self sideElementFor: selection).
 	root addChild: body.
 	^ root
 ]
@@ -333,18 +329,18 @@ ImageMapOverview >> printOn: aStream [
 ]
 
 { #category : 'ui' }
-ImageMapOverview >> refreshDetail [
+ImageMapOverview >> refreshDetailIn: aSelection [
 	| btn pg |
-	detailBox removeChildren.
-	selectedPage ifNil: [detailBox addChild: (self line: 'Click a block.'). ^ self].
-	pg := selectedPage.
+	aSelection detailBox removeChildren.
+	aSelection item ifNil: [aSelection detailBox addChild: (self line: 'Click a block.'). ^ self].
+	pg := aSelection item.
 	{ 'offset: +', (pg offset printStringBase: 16).
 	  'objects: ', pg objectCount printString.
 	  'size: ', (pg bytes // 1024) printString, ' KiB'.
 	  'first object: #', pg firstIndex printString, ' (at scan time)' }
-		do: [:s | detailBox addChild: (self line: s)].
+		do: [:s | aSelection detailBox addChild: (self line: s)].
 	(pg topKinds: 4) do: [:a |
-		detailBox addChild: (self line: '  ', a key asString, '  ', (a value // 1024) printString, ' KiB  (', (a value * 100 // (pg bytes max: 1)) printString, '%)')].
+		aSelection detailBox addChild: (self line: '  ', a key asString, '  ', (a value // 1024) printString, ' KiB  (', (a value * 100 // (pg bytes max: 1)) printString, '%)')].
 	btn := BrButton new
 		aptitude: BrGlamorousButtonWithLabelAptitude new;
 		label: 'Open window here';
@@ -353,9 +349,9 @@ ImageMapOverview >> refreshDetail [
 		w := pg isAnchorAlive
 			ifTrue: [ImageMapSnapshot startingAt: pg firstObject count: 1024]
 			ifFalse: [nil].
-		w ifNil: [detailBox addChild: (self line: 'That object no longer exists (GC). Rescan the overview.')]
+		w ifNil: [aSelection detailBox addChild: (self line: 'That object no longer exists (GC). Rescan the overview.')]
 			ifNotNil: [btn phlow spawnObject: (ImageMapViewer on: w) viewName: 'Map']].
-	detailBox addChild: btn
+	aSelection detailBox addChild: btn
 ]
 
 { #category : 'private' }
@@ -410,21 +406,20 @@ ImageMapOverview >> scannedAt [
 ]
 
 { #category : 'ui' }
-ImageMapOverview >> select: aPage element: anElement [
-	selectedElement ifNotNil: [:prev | prev border: BlBorder empty].
-	selectedElement := anElement.
-	selectedPage := aPage.
+ImageMapOverview >> select: aPage element: anElement in: aSelection [
+	aSelection element ifNotNil: [:prev | prev border: BlBorder empty].
+	aSelection element: anElement; item: aPage.
 	anElement border: (BlBorder paint: Color white width: 2).
-	self refreshDetail
+	self refreshDetailIn: aSelection
 ]
 
 { #category : 'ui' }
-ImageMapOverview >> sideElement [
+ImageMapOverview >> sideElementFor: aSelection [
 	| side classesBtn |
 	side := BlElement new
 		layout: BlLinearLayout vertical;
 		padding: (BlInsets all: 8);
-		constraintsDo: [:c | c horizontal exact: 300. c vertical matchParent].
+		constraintsDo: [:c | c horizontal exact: 300. c vertical fitContent].
 	side addChild: (self heading: 'Heap').
 	side addChild: (self line: total printString, ' objects').
 	side addChild: (self line: (self mebibytes: totalBytes), ' of live objects').
@@ -439,12 +434,15 @@ ImageMapOverview >> sideElement [
 	classesBtn action: [classesBtn phlow spawnObject: self viewName: 'Classes'].
 	side addChild: classesBtn.
 	side addChild: (self heading: 'Selected block').
-	detailBox := BlElement new
+	aSelection detailBox: (BlElement new
 		layout: BlLinearLayout vertical;
-		constraintsDo: [:c | c horizontal matchParent. c vertical fitContent].
-	side addChild: detailBox.
-	self refreshDetail.
-	^ side
+		constraintsDo: [:c | c horizontal matchParent. c vertical fitContent];
+		yourself).
+	side addChild: aSelection detailBox.
+	self refreshDetailIn: aSelection.
+	^ side asScrollableElement
+		constraintsDo: [:c | c horizontal exact: 300. c vertical matchParent];
+		yourself
 ]
 
 { #category : 'accessing' }
