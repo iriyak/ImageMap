@@ -29,6 +29,16 @@ Metacello new
 	load
 ```
 
+## Lepiter
+
+The repository has a Lepiter database in `lepiter/`, with the page *Getting started with ImageMap in GT*. It holds runnable snippets for the three views. To register the database in your image:
+
+```smalltalk
+BaselineOfImageMap loadLepiter.
+```
+
+Then open the Lepiter book and search for "ImageMap".
+
 ## Usage
 
 Open a window at a given object index:
