@@ -6,6 +6,10 @@ Every block is one object (or one page of objects), and its colour is the kind o
 
 ImageMap is experimental. The API and the look of the views may change.
 
+![The overview of the whole heap (left) and a window of 1024 objects opened from one of its blocks (right)](docs/Screenshot1.png)
+
+*The overview of the whole heap (left), and the window opened from the selected block with* Open window here *(right).*
+
 ## What you get
 
 **Window** (`ImageMapViewer`). 1024 consecutive objects, 16 per row, in the order `SystemNavigation>>allObjectsDo:` visits them. The label at the start of each row is the running byte offset. Hover a block to see its object, click to select it, and press *Inspect* to open the object in an inspector. *Prev*, *Next*, a start-index field and a position bar move the window.
