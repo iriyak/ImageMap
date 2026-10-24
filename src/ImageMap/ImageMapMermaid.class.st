@@ -157,6 +157,25 @@ ImageMapMermaid class >> neighboursSourceFor: anOverview [
 	^ out contents
 ]
 
+{ #category : 'private' }
+ImageMapMermaid class >> nodeColorsRoot: aRootName named: named [
+	"The nodeColors of the sankey, as JSON members. Every kind, the classes that are named and the 'other <kind>' nodes take the colour of their kind (ImageMapCell colorFor:), so the diagram agrees with the legend and with Bytes by kind. The root and the small remainders are grey."
+	| pairs kinds |
+	kinds := ImageMapCell kinds.
+	pairs := OrderedCollection new.
+	pairs add: aRootName -> '9AA5B1'.
+	pairs add: 'small remainders' -> 'CCCCCC'.
+	kinds do: [:k | | hex |
+		hex := (ImageMapCell colorFor: k) asHexString.
+		pairs add: k -> hex.
+		pairs add: ('other ', k) -> hex].
+	named do: [:a |
+		pairs add: a key name -> (ImageMapCell colorFor: (kinds at: a value first)) asHexString].
+	^ String streamContents: [:s |
+		pairs do: [:p | s nextPutAll: '"', p key, '": "#', p value, '"']
+			separatedBy: [s nextPutAll: ', ']]
+]
+
 { #category : 'ui' }
 ImageMapMermaid class >> notScannedElement [
 	^ (self messageElement: 'This overview was scanned before this was counted. Scan again with ImageMapOverview scan.') asScrollableElement
@@ -174,7 +193,7 @@ ImageMapMermaid class >> plainElementForSource: aMermaidString [
 
 { #category : 'sources' }
 ImageMapMermaid class >> sankeyStats: stats total: aTotal root: aRootName minShare: aShare maxClasses: aCap [
-	"A sankey diagram of bytes: aRootName, then the kinds, then the classes. stats maps a class to #(kind index, bytes, objects), as ImageMapOverview>>classStats does. A class is named when it has at least aShare of aTotal bytes, and at most aCap classes are named (nil: no limit), the biggest first. What is left of a kind goes to 'other <kind>' when it is at least 0.1% of the total, and to 'small remainders' otherwise. The unit is MiB, or KiB when the total is under 4 MiB. The height of the diagram follows the number of nodes in the last column; without it Mermaid draws every node one pixel high."
+	"A sankey diagram of bytes: aRootName, then the kinds, then the classes. stats maps a class to #(kind index, bytes, objects), as ImageMapOverview>>classStats does. A class is named when it has at least aShare of aTotal bytes, and at most aCap classes are named (nil: no limit), the biggest first. What is left of a kind goes to 'other <kind>' when it is at least 0.1% of the total, and to 'small remainders' otherwise. The nodes take the colour of their kind (nodeColorsRoot:named:). The unit is MiB, or KiB when the total is under 4 MiB. The height of the diagram follows the number of nodes in the last column; without it Mermaid draws every node one pixel high."
 	| kinds total kindBytes rest named out divisor |
 	kinds := ImageMapCell kinds.
 	total := aTotal max: 1.
@@ -195,7 +214,9 @@ ImageMapMermaid class >> sankeyStats: stats total: aTotal root: aRootName minSha
 	out := WriteStream on: String new.
 	out nextPutAll: '%%{init: {"sankey": {"width": 900, "suffix": " ', (divisor = 1024 ifTrue: ['KiB'] ifFalse: ['MiB']), '", "height": ';
 		print: ((named size + kinds size) * 28 max: 420);
-		nextPutAll: '}}}%%'; lf.
+		nextPutAll: ', "nodeColors": {';
+		nextPutAll: (self nodeColorsRoot: aRootName named: named);
+		nextPutAll: '}}}}%%'; lf.
 	out nextPutAll: 'sankey-beta'; lf; lf.
 	kinds doWithIndex: [:k :i |
 		self line: aRootName to: k bytes: (kindBytes at: i) divisor: divisor on: out].
