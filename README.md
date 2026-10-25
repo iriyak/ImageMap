@@ -68,17 +68,19 @@ Then open the Lepiter book and search for "ImageMap".
 
 ## Usage
 
-Open a window at a given object index:
+Start with the whole heap. Open the overview (it scans the heap first, which takes a few seconds):
+
+```smalltalk
+ImageMapOverview open.
+```
+
+Then look at a part of it. Open a window of 1024 objects that starts at the 5,000,000th object in heap order (the position of the object in the snapshot array that `SystemNavigation>>allObjectsDo:` walks, counted from 1; it is not a memory address or a byte offset). A GT image has about 11 million live objects, so this is somewhere in the middle:
 
 ```smalltalk
 ImageMapViewer openAt: 5000000.
 ```
 
-Open the overview (it scans the heap first, which takes a few seconds):
-
-```smalltalk
-ImageMapOverview open.
-```
+In the overview, *Open window here* does the same for the selected block, so you rarely need to type an index.
 
 Compare the heap with an earlier state:
 
