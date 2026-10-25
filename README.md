@@ -37,15 +37,22 @@ Glamorous Toolkit (Bloc, Brick and Phlow). ImageMap was developed and tried on G
 
 ## Installation
 
+Run the two steps one after the other, each in its own Playground (`Pele2svg` does not exist until the first one has finished).
+
+1. Load ImageMap. This also loads Pele2svg (with its tests), which draws the diagrams:
+
 ```smalltalk
 Metacello new
 	repository: 'github://iriyak/ImageMap:main/src';
 	baseline: 'ImageMap';
-	load.
-Pele2svg installDependencies
+	load
 ```
 
-This also loads Pele2svg (with its tests), which draws the diagrams. It needs Node.js 20 or newer.
+2. Install the dependencies of Pele2svg once. This needs Node.js 20 or newer:
+
+```smalltalk
+Pele2svg installDependencies
+```
 
 ## Lepiter
 
