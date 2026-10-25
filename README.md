@@ -12,7 +12,7 @@ Every block is one object (or one page of objects), and its colour is the kind o
 
 ## What you get
 
-**Window** (`ImageMapViewer`). 1024 consecutive objects, 16 per row, in the order `SystemNavigation>>allObjectsDo:` visits them. The label at the start of each row is the running byte offset. Hover a block to see its object, click to select it, and press *Inspect* to open the object in an inspector. *Prev*, *Next*, a start-index field and a position bar move the window. The *Classes* and *References* buttons in the side panel open diagrams (see Diagrams below).
+**Window** (`ImageMapViewer`). 1024 consecutive objects, 16 per row, in the order `SystemNavigation>>allObjectsDo:` visits them. The label at the start of each row is the running byte offset. Hover a block to see its object, click to select it, and press *Inspect* to open the object in an inspector. *Prev*, *Next*, a start-index field and a position bar move the window. The *Classes* and *References* buttons in the side panel open diagrams (see below).
 
 **Overview** (`ImageMapOverview`). The whole heap in one picture. One block is one page of 1 MiB of live objects, coloured by the kind that takes the most bytes. The side panel shows the bytes per kind for the whole heap and the details of the selected page, a *Classes* button opens the *Classes* tab, and *Open window here* opens a window at the start of that page.
 
@@ -33,7 +33,7 @@ Kinds and colours: `class`, `method`, `symbol`, `string`, `array`, `methoddict`,
 
 Glamorous Toolkit (Bloc, Brick and Phlow). ImageMap was developed and tried on GT v1.1.624 (Pharo 13.1, 64-bit Spur, Windows). Other versions and platforms have not been tried.
 
-Optional: [Pele2svg](https://github.com/iriyak/pele2svg) (and Node.js 20 or newer, which it runs) draws the Mermaid diagrams. Without it, those tabs say so and everything else works. See Installation. Each diagram starts an external process and takes about half a second.
+[Pele2svg](https://github.com/iriyak/pele2svg) and Node.js 20 or newer draw the Mermaid diagrams. They are loaded by default; without them those tabs say so and everything else works.
 
 ## Installation
 
@@ -41,18 +41,11 @@ Optional: [Pele2svg](https://github.com/iriyak/pele2svg) (and Node.js 20 or newe
 Metacello new
 	repository: 'github://iriyak/ImageMap:main/src';
 	baseline: 'ImageMap';
-	load
-```
-
-To get the diagrams too, load the group `Diagrams`, which adds Pele2svg, and install Pele once (it needs Node.js 20 or newer):
-
-```smalltalk
-Metacello new
-	repository: 'github://iriyak/ImageMap:main/src';
-	baseline: 'ImageMap';
-	load: 'Diagrams'.
+	load.
 Pele2svg installDependencies
 ```
+
+This also loads Pele2svg (with its tests), which draws the diagrams. It needs Node.js 20 or newer.
 
 ## Lepiter
 
