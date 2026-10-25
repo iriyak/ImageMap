@@ -94,6 +94,17 @@ ImageMapViewerPane >> line: aString [
 ]
 
 { #category : 'ui' }
+ImageMapViewerPane >> offsetRule [
+	"How the offset of a block is counted, as a formula. Nothing is added when Pele2svg cannot typeset it."
+
+	(ImageMapFormula elementForTex: '\text{offset}_i=\sum_{j<i}s_j') ifNotNil: [:formula |
+		sidePanel addChild: (self heading: 'Offset').
+		sidePanel addChild: formula.
+		sidePanel addChild: (self line: 'the sizes s of the objects before it;').
+		sidePanel addChild: (self line: 'a running total, not a memory address')]
+]
+
+{ #category : 'ui' }
 ImageMapViewerPane >> refresh [
 	"The window has moved, or this is the first time: draw the map, the side panel and the controls again."
 	| scroll |
@@ -130,6 +141,7 @@ ImageMapViewerPane >> refreshDetail [
 	  'offset: +', (cell offset printStringBase: 16).
 	  'size: ', cell bytes printString, ' B' }
 		do: [:s | detailBox addChild: (self line: s)].
+	self sizeFormulaOf: cell.
 	row := BlElement new
 		layout: BlLinearLayout horizontal;
 		constraintsDo: [:c | c horizontal matchParent. c vertical fitContent];
@@ -164,7 +176,8 @@ ImageMapViewerPane >> refreshSide [
 		layout: BlLinearLayout vertical;
 		constraintsDo: [:c | c horizontal matchParent. c vertical fitContent].
 	sidePanel addChild: detailBox.
-	self refreshDetail
+	self refreshDetail.
+	self offsetRule
 ]
 
 { #category : 'ui' }
@@ -179,6 +192,18 @@ ImageMapViewerPane >> select: aCell element: anElement [
 { #category : 'initialization' }
 ImageMapViewerPane >> setViewer: aViewer [
 	viewer := aViewer
+]
+
+{ #category : 'ui' }
+ImageMapViewerPane >> sizeFormulaOf: aCell [
+	"Under the size of the selected object: how that size follows from its slots, as two formulas. Nothing is added when there is none for the object or Pele2svg cannot typeset them."
+
+	| formulas |
+	formulas := (aCell sizeFormulaTexLines ifNil: [ ^ self ]) collect: [:tex | ImageMapFormula elementForTex: tex].
+	(formulas allSatisfy: #notNil) ifFalse: [ ^ self ].
+	formulas do: [:formula | detailBox addChild: (formula margin: (BlInsets top: 4 left: 0 bottom: 0 right: 0))].
+	detailBox addChild: (self line: 'header 8 B + 8 B for each of w slots,').
+	detailBox addChild: (self line: 'at least 16 B (+8 B when w >= 255)')
 ]
 
 { #category : 'accessing' }

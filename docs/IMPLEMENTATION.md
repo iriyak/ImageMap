@@ -59,6 +59,12 @@ sizeInMemory
 
 `byteSizeOfInstanceOfSize:` is `<primitive: 181>`, so the size comes from the class format and the slot count and follows the layout in section 1 (header, overflow word, rounding, 16-byte minimum). It is not read from the object's header, and ImageMap does not look at free-chunk sizes or segment gaps.
 
+In formula form, with $w$ the number of slots in words (instance variables plus indexed slots for pointer objects, $\lceil n/8 \rceil$ for $n$ bytes, $\lceil 4n/8 \rceil$ for $n$ 32-bit words), the size $s$ of an object is
+
+$$s = \max\bigl(16,\ 8 + 8w + 8\cdot[\,w \ge 255\,]\bigr)$$
+
+where $[\,\cdot\,]$ is 1 when the condition holds and 0 otherwise: 8 bytes of header, 8 bytes per slot, 8 more for the overflow word, and 16 bytes at least. I checked this rule against `sizeInMemory` for many objects of the image, and it gave the same number each time. The side panel of a window shows the same two lines for the selected object (for example `w = ⌈324/8⌉ = 41` and `s = max(16, 8 + 8w) = 336` for a `ByteString` of 324 characters) when Pele2svg is loaded; compiled code and proxies have no such line.
+
 Two details:
 
 - Some objects answer something that is not an Integer (for example proxies such as a `MessageCatcher` that turn every message into data). For those, the scan uses the size of the class instead.
@@ -67,6 +73,12 @@ Two details:
 ### 2.3 Offset: a running total, not an address
 
 While iterating, ImageMap adds up the sizes: the *offset* of an object is the sum of the sizes of all the objects before it in the snapshot. It is meant to give the picture a sense of position and scale, like the address column in a memory dump. It is **not a memory address**: gaps (free chunks, bridges, segment boundaries) are not in it, and it is different after the next GC.
+
+For the objects $0, 1, \dots$ of the snapshot with sizes $s_0, s_1, \dots$, the offset of object $i$ is
+
+$$\text{offset}_i = \sum_{j<i} s_j$$
+
+so the first object has offset 0, and the offset of the next one is the offset of this one plus its size.
 
 ### 2.4 Kind: a classification of the class
 
@@ -84,7 +96,11 @@ A window is `count` consecutive entries of the snapshot starting at index `start
 
 ### 3.2 Overview (`ImageMapOverview`, `ImageMapPage`)
 
-`scan` runs `Smalltalk garbageCollect` and walks the snapshot once. It starts a new page whenever the running offset reaches the next 1 MiB boundary, so a page is "about 1 MiB": it ends after the object that crosses the boundary. For each page it adds the bytes per kind, and the colour of the block is the kind with most bytes. It also adds up bytes and object counts per class (`classStats`), which the diff needs.
+`scan` runs `Smalltalk garbageCollect` and walks the snapshot once. It starts a new page whenever the running offset reaches the next 1 MiB boundary, so a page is "about 1 MiB": it ends after the object that crosses the boundary. In formula form, page $k$ starts at the first object whose offset has reached $k$ MiB:
+
+$$\text{start}_k = \min\{\, i : \text{offset}_i \ge k \cdot 2^{20} \,\}$$
+
+The Overview side panel shows this formula when Pele2svg is loaded. For each page it adds the bytes per kind, and the colour of the block is the kind with most bytes. It also adds up bytes and object counts per class (`classStats`), which the diff needs.
 
 The first object of a page is kept in a `WeakArray` (the **anchor**). It has two uses: *Open window here* looks the anchor up again with `startingAt:` to find its current index, which survives a GC that changed all indexes; and the diff uses it as a landmark. It is weak so that an overview kept as a baseline does not hold on to objects that would otherwise be collected.
 

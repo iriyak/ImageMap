@@ -424,6 +424,10 @@ ImageMapOverview >> sideElementFor: aSelection [
 	side addChild: (self line: total printString, ' objects').
 	side addChild: (self line: (self mebibytes: totalBytes), ' of live objects').
 	side addChild: (self line: pages size printString, ' blocks x ', (self mebibytes: pageBytes)).
+	(ImageMapFormula elementForTex: '\text{start}_k=\min\{\,i:\ \text{offset}_i\ge k\cdot 2^{20}\,\}') ifNotNil: [:formula |
+		side addChild: (formula margin: (BlInsets top: 4 left: 0 bottom: 0 right: 0)).
+		side addChild: (self line: 'a block starts at the first object').
+		side addChild: (self line: 'whose offset reaches k MiB')].
 	side addChild: self baselineSection.
 	side addChild: (self heading: 'Bytes by kind').
 	self kindTotals do: [:a | a value > 0 ifTrue: [side addChild: (self kindBytesRow: a key bytes: a value)]].

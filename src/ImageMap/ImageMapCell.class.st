@@ -156,3 +156,21 @@ ImageMapCell >> offset [
 ImageMapCell >> offset: anObject [
 	offset := anObject
 ]
+
+{ #category : 'formatting' }
+ImageMapCell >> sizeFormulaTexLines [
+	"Two lines of TeX that show how the size follows from the number of slots, with the numbers of this object: the slots w, and then the size s. Answers nil when the size is not that of a plain object (a compiled method, a proxy that does not answer its class) or the rule does not give it. The rule: a header of 8 bytes and 8 bytes for each slot (w), at least 16 bytes, and one more word of 8 bytes when w is 255 or more. Bytes and 32-bit words fill slots of 8 bytes (rounded up). See docs/IMPLEMENTATION.md."
+
+	| c n w size slots |
+	c := [ object class ] on: Error do: [ ^ nil ].
+	(c includesBehavior: CompiledCode) ifTrue: [ ^ nil ].
+	n := c isVariable ifTrue: [ [ object basicSize ] on: Error do: [ ^ nil ] ] ifFalse: [ 0 ].
+	c isBytes
+		ifTrue: [ w := c instSize + (n + 7 // 8). slots := 'w=\lceil ', n printString, '/8\rceil=', w printString ]
+		ifFalse: [ c isWords
+			ifTrue: [ w := c instSize + (n * 4 + 7 // 8). slots := 'w=\lceil 4\cdot ', n printString, '/8\rceil=', w printString ]
+			ifFalse: [ w := c instSize + n. slots := 'w=', w printString ] ].
+	size := 16 max: 8 + (8 * w) + (w >= 255 ifTrue: [ 8 ] ifFalse: [ 0 ]).
+	size = bytes ifFalse: [ ^ nil ].
+	^ { slots. 's=\max(16,\,8+8w', (w >= 255 ifTrue: [ '+8' ] ifFalse: [ '' ]), ')=', size printString }
+]

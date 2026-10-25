@@ -35,6 +35,8 @@ Glamorous Toolkit (Bloc, Brick and Phlow). ImageMap was developed and tried on G
 
 [Pele2svg](https://github.com/iriyak/pele2svg) and Node.js 20 or newer draw the Mermaid diagrams. They are loaded by default; without them those tabs say so and everything else works.
 
+The side panels also show three small formulas (the size of the selected object, the offset, the start of a block) rendered with Pele2svg's math support. That support is newer than Pele2svg v0.3.0, so it needs the `main` branch of Pele2svg; with an older one the formulas are left out and nothing else changes.
+
 ## Installation
 
 Run the two steps one after the other, each in its own Playground (`Pele2svg` does not exist until the first one has finished).
