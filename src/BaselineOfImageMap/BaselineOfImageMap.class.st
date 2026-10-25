@@ -1,7 +1,7 @@
 "
 I am the Metacello baseline of ImageMap. Load ImageMap with `Metacello new repository: 'github://iriyak/ImageMap:main/src'; baseline: 'ImageMap'; load`.
 
-The group 'Diagrams' also loads Pele2svg (github://iriyak/pele2svg), which draws the Mermaid diagrams of the Classes, Neighbours, Sizes and Class changes views and of References: `... baseline: 'ImageMap'; load: 'Diagrams'`. Pele2svg needs Node.js, and `Pele2svg installDependencies` has to be run once after loading it. The default group does not load it, and ImageMap works without it.
+The default group also loads Pele2svg (github://iriyak/pele2svg, with its tests), which draws the Mermaid diagrams of the Classes, Neighbours, Sizes and Class changes views and of References. Pele2svg needs Node.js, and `Pele2svg installDependencies` has to be run once after loading it.
 
 ImageMap needs Glamorous Toolkit (Bloc, Brick and Phlow), which this baseline does not declare, so load it into a GT image. `BaselineOfImageMap loadLepiter` adds the lepiter directory of the cloned repository to the default Lepiter database.
 "
@@ -34,7 +34,6 @@ BaselineOfImageMap >> baseline: spec [
 			spec baseline: 'Pele2svg' with: [
 				spec repository: 'github://iriyak/pele2svg:main/src'].
 			spec package: 'ImageMap'.
-			spec group: 'default' with: #('ImageMap').
-			spec group: 'Diagrams' with: #('ImageMap' 'Pele2svg')
+			spec group: 'default' with: #('ImageMap' 'Pele2svg')
 		]
 ]
